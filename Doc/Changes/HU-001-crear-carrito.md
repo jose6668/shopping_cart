@@ -4,7 +4,7 @@
 - HU: `HU-001`
 - Nombre: Crear carrito de compras
 - Microservicio: `shopping-cart`
-- Estado: Propuesta funcional para implementacion en backend
+- Estado: Implementada en backend, gateway y base de datos
 - Rama de trabajo sugerida: `HU-001--back-dev`
 
 ## 2. Objetivo de la HU
