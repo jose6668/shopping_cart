@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: shopping-cart-postgres
+    environment:
+      POSTGRES_DB: shopping_cart_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5020:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shopping_cart_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: shopping-cart-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: shopping_cart_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "8081:8081"
+
+  gateway:
+    build:
+      context: ./gateway
+    container_name: shopping-cart-gateway
+    depends_on:
+      - backend
+    environment:
+      SERVER_PORT: 8080
+      BACKEND_BASE_URL: http://backend:8081
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
