@@ -133,3 +133,41 @@ Aunque el modelo de referencia presentado en clase muestra varios microservicios
 ## 6. Conclusion
 
 La estructura propuesta para `shopping_cart` busca adaptar la idea de monorepo del curso a un caso mas simple y enfocado: un solo microservicio con `API Gateway`, frontend, base de datos y configuracion de despliegue. Esto permite mantener una organizacion profesional del proyecto sin perder claridad en el proceso de aprendizaje.
+
+## 7. Estado Actual Implementado
+
+Actualmente el proyecto ya no se encuentra solo en fase de propuesta. A nivel tecnico ya tiene implementado:
+
+- `backend` con la `HU-001 - Crear carrito de compras`
+- `gateway` consumiendo el backend a traves de `POST /api/v1/carts`
+- `docker-compose.yml` para levantar `postgres`, `backend` y `gateway`
+- `database/init.sql` para crear la tabla `carts`
+- configuracion de PostgreSQL en `localhost:5020`
+
+Estructura real actualmente usada:
+
+```text
+shopping_cart/
+|-- README.md
+|-- docker-compose.yml
+|-- Doc/
+|-- backend/
+|   |-- src/main/java/shopping_cart/backend/controller/
+|   |-- src/main/java/shopping_cart/backend/dto/
+|   |-- src/main/java/shopping_cart/backend/entity/
+|   |-- src/main/java/shopping_cart/backend/exception/
+|   |-- src/main/java/shopping_cart/backend/repository/
+|   |-- src/main/java/shopping_cart/backend/service/
+|   |-- src/main/resources/application.yaml
+|   `-- Dockerfile
+|-- gateway/
+|   |-- src/main/java/shopping_cart/gateway/config/
+|   |-- src/main/java/shopping_cart/gateway/controller/
+|   |-- src/main/java/shopping_cart/gateway/dto/
+|   |-- src/main/java/shopping_cart/gateway/service/
+|   |-- src/main/resources/application.yaml
+|   `-- Dockerfile
+|-- database/
+|   `-- init.sql
+`-- frontend/
+```
