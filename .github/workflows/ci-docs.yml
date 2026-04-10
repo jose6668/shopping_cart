@@ -1,0 +1,25 @@
+name: CI Docs
+
+on:
+  push:
+    branches: [develop, qa, main]
+  pull_request:
+    branches: [develop, qa, main]
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate documentation files
+        run: |
+          test -f README.md
+          test -f Doc/introduccion.md
+          test -f Doc/estructura-proyecto.md
+          test -f Doc/diagrama-contexto.md
+
+      - name: Confirm documentation check
+        run: echo "Documentation files are present"
