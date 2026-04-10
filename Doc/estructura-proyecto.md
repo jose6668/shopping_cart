@@ -1,6 +1,6 @@
 # Estructura General del Proyecto
 
-Este documento centraliza la documentacion de la estructura propuesta para el proyecto `shopping_cart`. A diferencia del ejemplo de arquitectura monorepo mostrado en clase, en este caso el proyecto estara compuesto por un solo microservicio principal, acompañado por su frontend, la base de datos y la configuracion necesaria para Docker. Para el desarrollo del backend se utilizara el framework `Spring Boot`.
+Este documento centraliza la documentacion de la estructura propuesta para el proyecto `shopping_cart`. A diferencia del ejemplo de arquitectura monorepo mostrado en clase, en este caso el proyecto estara compuesto por un solo microservicio principal, un `API Gateway`, su frontend, la base de datos y la configuracion necesaria para Docker. Para el desarrollo del backend se utilizara el framework `Spring Boot`.
 
 ## 1. Proposito de la Estructura
 
@@ -14,10 +14,20 @@ shopping_cart/
 ├── docker-compose.yml
 ├── .github/
 │   └── workflows/
-│       └── ci.yml
+│       ├── ci-backend.yml
+│       └── ci-gateway.yml
 ├── Doc/
 │   ├── introduccion.md
-│   └── estructura-proyecto.md
+│   ├── estructura-proyecto.md
+│   └── diagrama-contexto.md
+├── gateway/                         (API Gateway - Spring Boot)
+│   ├── src/
+│   │   └── main/
+│   │       ├── java/
+│   │       └── resources/
+│   │           └── application.yml
+│   ├── pom.xml
+│   └── Dockerfile
 ├── backend/                         (Shopping Cart Microservice - Spring Boot)
 │   ├── src/
 │   │   └── main/
@@ -46,6 +56,7 @@ Archivo principal del proyecto. Aqui se incluira una vista general del sistema, 
 
 Permitira levantar todos los servicios necesarios del proyecto en conjunto, por ejemplo:
 
+- API Gateway
 - Backend
 - Frontend
 - Base de datos
@@ -55,6 +66,24 @@ Esto facilitara las pruebas locales y el despliegue del entorno completo.
 ### `.github/workflows/`
 
 Contendra los archivos de integracion continua del proyecto. En esta carpeta se podran definir validaciones automaticas como pruebas, construccion del proyecto o revisiones basicas de calidad.
+
+### `gateway/`
+
+Esta carpeta contendra el `API Gateway` del proyecto, tambien desarrollado con `Spring Boot`. Su funcion sera actuar como punto de entrada principal para las solicitudes del frontend, centralizando el acceso al microservicio `shopping_cart`.
+
+Entre sus responsabilidades estaran:
+
+- Recibir las solicitudes entrantes del frontend
+- Redirigir las peticiones hacia el microservicio correspondiente
+- Facilitar una arquitectura mas ordenada y escalable
+- Servir como punto central de acceso para futuras ampliaciones del sistema
+
+Dentro de esta carpeta tambien se manejara una estructura tipica de Spring Boot:
+
+- Codigo fuente en `src/main/java`
+- Configuracion en `src/main/resources/application.yml`
+- Dependencias y construccion con `pom.xml`
+- Contenerizacion mediante `Dockerfile`
 
 ### `Doc/`
 
@@ -79,7 +108,7 @@ Dentro de esta carpeta tambien se manejara la estructura tipica de un proyecto S
 - Dependencias y construccion con `pom.xml`
 - Contenerizacion mediante `Dockerfile`
 
-Como este proyecto tendra un solo microservicio, esta sera la pieza central del sistema.
+Como este proyecto tendra un solo microservicio, esta sera la pieza central de la logica del sistema, mientras que el `API Gateway` sera la puerta de entrada.
 
 ### `frontend/`
 
@@ -98,12 +127,12 @@ Dado que el proyecto tambien contempla la base de datos como una parte fundament
 
 ## 4. Observacion Importante
 
-Aunque el modelo de referencia presentado en clase muestra varios microservicios, en nuestro proyecto solo se implementara uno: el microservicio de `shopping_cart`. Sin embargo, se mantendra una estructura ordenada de tipo monorepo para que el sistema sea mas entendible y para que en el futuro pueda ampliarse si se desea integrar nuevos servicios.
+Aunque el modelo de referencia presentado en clase muestra varios microservicios, en nuestro proyecto solo se implementara uno: el microservicio de `shopping_cart`. Sin embargo, se agregara un `API Gateway` para centralizar el acceso al backend y se mantendra una estructura ordenada de tipo monorepo para que el sistema sea mas entendible y para que en el futuro pueda ampliarse si se desea integrar nuevos servicios.
 
 ## 5. Beneficios de Esta Organizacion
 
 - Facilita la comprension general del proyecto.
-- Separa claramente backend, frontend y base de datos.
+- Separa claramente gateway, backend, frontend y base de datos.
 - Permite documentar el desarrollo de forma ordenada.
 - Mejora el mantenimiento del codigo.
 - Hace mas sencillo el uso de Docker para levantar el entorno completo.
@@ -111,4 +140,4 @@ Aunque el modelo de referencia presentado en clase muestra varios microservicios
 
 ## 6. Conclusion
 
-La estructura propuesta para `shopping_cart` busca adaptar la idea de monorepo del curso a un caso mas simple y enfocado: un solo microservicio con su frontend, su base de datos y su configuracion de despliegue. Esto permite mantener una organizacion profesional del proyecto sin perder claridad en el proceso de aprendizaje.
+La estructura propuesta para `shopping_cart` busca adaptar la idea de monorepo del curso a un caso mas simple y enfocado: un solo microservicio con `API Gateway`, frontend, base de datos y configuracion de despliegue. Esto permite mantener una organizacion profesional del proyecto sin perder claridad en el proceso de aprendizaje.

@@ -2,7 +2,7 @@
 
 ## 1. Introduccion
 
-Este mini proyecto nace como una guia de apoyo para estudiantes, desarrolladores o cualquier persona que desee construir un microservicio de `shopping_cart` y no sepa como empezar. En muchos casos, se entiende la idea general de un carrito de compras, pero no se tiene claridad sobre como organizar el backend, el frontend, la base de datos y la contenerizacion con Docker dentro de un proyecto completo.
+Este mini proyecto nace como una guia de apoyo para estudiantes, desarrolladores o cualquier persona que desee construir un microservicio de `shopping_cart` y no sepa como empezar. En muchos casos, se entiende la idea general de un carrito de compras, pero no se tiene claridad sobre como organizar el backend, el frontend, un `API Gateway`, la base de datos y la contenerizacion con Docker dentro de un proyecto completo.
 
 Por esta razon, este proyecto se desarrollara paso a paso, con el objetivo de mostrar de forma practica como se construye un microservicio de carrito de compras desde cero. La idea principal no es solo obtener un sistema funcional, sino tambien servir como referencia de aprendizaje para comprender la estructura, los componentes y el flujo de trabajo que normalmente intervienen en este tipo de soluciones.
 
@@ -13,7 +13,7 @@ Este proyecto se realizara como una ayuda para las personas que quieran desarrol
 Por ello, este proyecto busca:
 
 - Servir como una guia practica para el desarrollo de un microservicio de carrito de compras.
-- Mostrar una estructura organizada para integrar backend, frontend, base de datos y Docker.
+- Mostrar una estructura organizada para integrar `API Gateway`, backend, frontend, base de datos y Docker.
 - Explicar paso a paso como se puede construir una solucion real desde una base inicial.
 - Facilitar el aprendizaje de buenas practicas en el desarrollo de microservicios.
 - Ofrecer un ejemplo que pueda ser reutilizado, adaptado o ampliado en futuros proyectos.
@@ -35,6 +35,7 @@ Entre las funcionalidades esperadas del microservicio se encuentran:
 - Calcular el total de productos y el monto acumulado del carrito.
 - Mantener la informacion organizada en una base de datos.
 - Exponer endpoints desde el backend para la comunicacion con otras partes del sistema.
+- Centralizar el acceso a los servicios por medio de un `API Gateway`.
 - Contar con una interfaz frontend para visualizar y administrar el carrito.
 - Ejecutarse en un entorno contenerizado mediante Docker para facilitar su despliegue y pruebas.
 
@@ -43,6 +44,7 @@ Entre las funcionalidades esperadas del microservicio se encuentran:
 Este proyecto abarcare el desarrollo de los componentes principales necesarios para el funcionamiento de un microservicio de carrito de compras:
 
 - Backend: encargado de la logica de negocio y de la exposicion de endpoints.
+- API Gateway: encargado de centralizar y enrutar las solicitudes hacia el microservicio.
 - Frontend: encargado de la interfaz visual para la interaccion del usuario.
 - Base de datos: encargada de almacenar la informacion relacionada con el carrito y sus productos.
 - Docker: encargado de facilitar la ejecucion del proyecto en contenedores y simplificar su configuracion.
