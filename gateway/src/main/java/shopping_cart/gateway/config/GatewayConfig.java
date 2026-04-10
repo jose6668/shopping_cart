@@ -9,11 +9,8 @@ import org.springframework.web.client.RestClient;
 public class GatewayConfig {
 
     @Bean
-    RestClient backendRestClient(
-        RestClient.Builder builder,
-        @Value("${services.backend.base-url}") String backendBaseUrl
-    ) {
-        return builder
+    RestClient backendRestClient(@Value("${services.backend.base-url}") String backendBaseUrl) {
+        return RestClient.builder()
             .baseUrl(backendBaseUrl)
             .build();
     }
