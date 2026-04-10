@@ -12,10 +12,6 @@ La finalidad de esta estructura es organizar claramente cada parte del sistema p
 shopping_cart/
 ├── README.md
 ├── docker-compose.yml
-├── .github/
-│   └── workflows/
-│       ├── ci-backend.yml
-│       └── ci-gateway.yml
 ├── Doc/
 │   ├── introduccion.md
 │   ├── estructura-proyecto.md
@@ -62,10 +58,6 @@ Permitira levantar todos los servicios necesarios del proyecto en conjunto, por 
 - Base de datos
 
 Esto facilitara las pruebas locales y el despliegue del entorno completo.
-
-### `.github/workflows/`
-
-Contendra los archivos de integracion continua del proyecto. En esta carpeta se podran definir validaciones automaticas como pruebas, construccion del proyecto o revisiones basicas de calidad.
 
 ### `gateway/`
 
