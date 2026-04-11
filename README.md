@@ -8,13 +8,19 @@ Proyecto de carrito de compras con arquitectura basada en:
 
 ## Estado actual
 
-Actualmente se encuentra implementada la `HU-001 - Crear carrito de compras`.
+Actualmente se encuentran implementadas:
+- `HU-001 - Crear carrito de compras`
+- `HU-002 - Agregar producto al carrito`
+- `HU-003 - Consultar carrito`
 
 Flujo disponible:
 - el cliente consume el `gateway`
 - el `gateway` redirige la solicitud al `backend`
 - el `backend` crea o reutiliza el carrito activo
-- PostgreSQL persiste la informacion
+- el `backend` permite agregar productos al carrito existente
+- el `backend` permite consultar el carrito con sus items y el total acumulado
+- si el producto ya existe en el carrito, actualiza la cantidad
+- PostgreSQL persiste la informacion del carrito y sus items
 
 ## Servicios y puertos
 
@@ -25,6 +31,8 @@ Flujo disponible:
 ## Endpoint implementado
 
 - `POST /api/v1/carts`
+- `POST /api/v1/carts/{cartId}/items`
+- `GET /api/v1/carts/{cartId}`
 
 Ejemplo de request:
 
@@ -53,7 +61,7 @@ La base de datos usada es `shopping_cart_db`.
 
 El contenedor de PostgreSQL:
 - crea la base mediante `POSTGRES_DB`
-- ejecuta el script `database/init.sql` para crear la tabla `carts`
+- ejecuta el script `database/init.sql` para crear las tablas `carts` y `cart_items`
 
 ## Prueba rapida
 
@@ -63,4 +71,18 @@ Puedes probar la HU desde Postman o con `curl` consumiendo el gateway:
 curl -X POST http://localhost:8080/api/v1/carts ^
   -H "Content-Type: application/json" ^
   -d "{\"userId\":1}"
+```
+
+Luego puedes agregar un producto a un carrito existente:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/carts/1/items ^
+  -H "Content-Type: application/json" ^
+  -d "{\"productId\":1,\"name\":\"Mouse Logitech G203\",\"quantity\":2,\"price\":85000}"
+```
+
+Y consultar el detalle del carrito:
+
+```bash
+curl -X GET http://localhost:8080/api/v1/carts/1
 ```
