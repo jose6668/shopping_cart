@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
+import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.entity.Cart;
 import shopping_cart.backend.entity.CartItem;
@@ -204,5 +206,76 @@ class CartServiceImplTest {
         when(repository.findById(5L)).thenReturn(Optional.of(cart));
 
         assertThrows(BusinessValidationException.class, () -> service.addItemToCart(5L, request));
+    }
+
+    @Test
+    void shouldReturnCartDetailsWithItemsAndTotal() {
+        Cart cart = Cart.builder()
+            .id(8L)
+            .userId(40L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(2))
+            .updatedAt(LocalDateTime.now().minusMinutes(15))
+            .build();
+
+        CartItem firstItem = CartItem.builder()
+            .id(1L)
+            .cart(cart)
+            .productId(101L)
+            .name("Mouse Logitech G203")
+            .quantity(2)
+            .price(new BigDecimal("85000.00"))
+            .subtotal(new BigDecimal("170000.00"))
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(40))
+            .build();
+
+        CartItem secondItem = CartItem.builder()
+            .id(2L)
+            .cart(cart)
+            .productId(202L)
+            .name("Teclado Redragon Kumara")
+            .quantity(1)
+            .price(new BigDecimal("190000.00"))
+            .subtotal(new BigDecimal("190000.00"))
+            .createdAt(LocalDateTime.now().minusMinutes(50))
+            .updatedAt(LocalDateTime.now().minusMinutes(20))
+            .build();
+
+        when(repository.findById(8L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findAllByCartIdOrderByIdAsc(8L)).thenReturn(List.of(firstItem, secondItem));
+
+        CartDetailResponseDTO response = service.getCartById(8L);
+
+        assertEquals(8L, response.id());
+        assertEquals(40L, response.userId());
+        assertEquals(2, response.items().size());
+        assertEquals(new BigDecimal("360000.00"), response.total());
+    }
+
+    @Test
+    void shouldReturnCartDetailsWithEmptyItemsAndZeroTotal() {
+        Cart cart = Cart.builder()
+            .id(9L)
+            .userId(50L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(5))
+            .build();
+
+        when(repository.findById(9L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findAllByCartIdOrderByIdAsc(9L)).thenReturn(List.of());
+
+        CartDetailResponseDTO response = service.getCartById(9L);
+
+        assertTrue(response.items().isEmpty());
+        assertEquals(BigDecimal.ZERO, response.total());
+    }
+
+    @Test
+    void shouldFailToGetCartDetailsWhenCartDoesNotExist() {
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.getCartById(404L));
     }
 }

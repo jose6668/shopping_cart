@@ -1,10 +1,13 @@
 package shopping_cart.backend.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
+import shopping_cart.backend.dto.CartDetailItemResponseDTO;
+import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
 import shopping_cart.backend.entity.Cart;
@@ -69,6 +72,32 @@ public class CartServiceImpl implements ICartService {
         return toItemResponse(savedItem);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public CartDetailResponseDTO getCartById(Long cartId) {
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("No existe un carrito con id " + cartId));
+
+        List<CartDetailItemResponseDTO> items = cartItemRepository.findAllByCartIdOrderByIdAsc(cartId)
+            .stream()
+            .map(this::toDetailItemResponse)
+            .toList();
+
+        BigDecimal total = items.stream()
+            .map(CartDetailItemResponseDTO::subtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new CartDetailResponseDTO(
+            cart.getId(),
+            cart.getUserId(),
+            cart.getStatus().name(),
+            cart.getCreatedAt(),
+            cart.getUpdatedAt(),
+            items,
+            total
+        );
+    }
+
     private CartResponseDTO toResponse(Cart cart) {
         return new CartResponseDTO(
             cart.getId(),
@@ -83,6 +112,17 @@ public class CartServiceImpl implements ICartService {
         return new CartItemResponseDTO(
             cartItem.getId(),
             cartItem.getCart().getId(),
+            cartItem.getProductId(),
+            cartItem.getName(),
+            cartItem.getQuantity(),
+            cartItem.getPrice(),
+            cartItem.getSubtotal()
+        );
+    }
+
+    private CartDetailItemResponseDTO toDetailItemResponse(CartItem cartItem) {
+        return new CartDetailItemResponseDTO(
+            cartItem.getId(),
             cartItem.getProductId(),
             cartItem.getName(),
             cartItem.getQuantity(),

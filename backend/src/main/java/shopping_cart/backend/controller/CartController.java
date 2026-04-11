@@ -7,12 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
+import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
 import shopping_cart.backend.dto.CreateCartRequestDTO;
@@ -33,6 +35,13 @@ public class CartController {
         CartCreationResult result = cartService.createCart(request.userId());
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(result.cart());
+    }
+
+    @GetMapping("/{cartId}")
+    public ResponseEntity<CartDetailResponseDTO> getCartById(
+        @PathVariable @Positive(message = "cartId debe ser un valor positivo") Long cartId
+    ) {
+        return ResponseEntity.ok(cartService.getCartById(cartId));
     }
 
     @PostMapping("/{cartId}/items")
