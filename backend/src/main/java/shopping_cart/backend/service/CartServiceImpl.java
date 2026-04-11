@@ -10,6 +10,7 @@ import shopping_cart.backend.dto.CartDetailItemResponseDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
+import shopping_cart.backend.dto.CartTotalResponseDTO;
 import shopping_cart.backend.dto.DeleteCartItemResponseDTO;
 import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.entity.Cart;
@@ -135,17 +136,9 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional(readOnly = true)
     public CartDetailResponseDTO getCartById(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
-            .orElseThrow(() -> new ResourceNotFoundException("No existe un carrito con id " + cartId));
-
-        List<CartDetailItemResponseDTO> items = cartItemRepository.findAllByCartIdOrderByIdAsc(cartId)
-            .stream()
-            .map(this::toDetailItemResponse)
-            .toList();
-
-        BigDecimal total = items.stream()
-            .map(CartDetailItemResponseDTO::subtotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Cart cart = getCartOrThrow(cartId);
+        List<CartDetailItemResponseDTO> items = getCartItems(cartId);
+        CartTotalResponseDTO cartTotal = buildCartTotal(cartId, items);
 
         return new CartDetailResponseDTO(
             cart.getId(),
@@ -154,8 +147,16 @@ public class CartServiceImpl implements ICartService {
             cart.getCreatedAt(),
             cart.getUpdatedAt(),
             items,
-            total
+            cartTotal.totalAmount()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CartTotalResponseDTO getCartTotal(Long cartId) {
+        getCartOrThrow(cartId);
+        List<CartDetailItemResponseDTO> items = getCartItems(cartId);
+        return buildCartTotal(cartId, items);
     }
 
     private CartResponseDTO toResponse(Cart cart) {
@@ -188,6 +189,34 @@ public class CartServiceImpl implements ICartService {
             cartItem.getQuantity(),
             cartItem.getPrice(),
             cartItem.getSubtotal()
+        );
+    }
+
+    private Cart getCartOrThrow(Long cartId) {
+        return cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("No existe un carrito con id " + cartId));
+    }
+
+    private List<CartDetailItemResponseDTO> getCartItems(Long cartId) {
+        return cartItemRepository.findAllByCartIdOrderByIdAsc(cartId)
+            .stream()
+            .map(this::toDetailItemResponse)
+            .toList();
+    }
+
+    private CartTotalResponseDTO buildCartTotal(Long cartId, List<CartDetailItemResponseDTO> items) {
+        BigDecimal totalAmount = items.stream()
+            .map(CartDetailItemResponseDTO::subtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalItems = items.stream()
+            .mapToInt(CartDetailItemResponseDTO::quantity)
+            .sum();
+
+        return new CartTotalResponseDTO(
+            cartId,
+            totalItems,
+            totalAmount
         );
     }
 }

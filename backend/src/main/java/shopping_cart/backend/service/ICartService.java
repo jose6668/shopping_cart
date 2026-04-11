@@ -3,6 +3,7 @@ package shopping_cart.backend.service;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
+import shopping_cart.backend.dto.CartTotalResponseDTO;
 import shopping_cart.backend.dto.DeleteCartItemResponseDTO;
 import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 
@@ -17,4 +18,6 @@ public interface ICartService {
     DeleteCartItemResponseDTO deleteCartItem(Long cartId, Long itemId);
 
     CartDetailResponseDTO getCartById(Long cartId);
+
+    CartTotalResponseDTO getCartTotal(Long cartId);
 }

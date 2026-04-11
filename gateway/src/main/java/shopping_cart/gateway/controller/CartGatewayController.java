@@ -40,6 +40,13 @@ public class CartGatewayController {
         return cartGatewayService.getCartById(cartId);
     }
 
+    @GetMapping("/{cartId}/total")
+    public ResponseEntity<String> getCartTotal(
+        @PathVariable @Positive(message = "cartId must be a positive number") Long cartId
+    ) {
+        return cartGatewayService.getCartTotal(cartId);
+    }
+
     @PostMapping("/{cartId}/items")
     public ResponseEntity<String> addItemToCart(
         @PathVariable @Positive(message = "cartId must be a positive number") Long cartId,
