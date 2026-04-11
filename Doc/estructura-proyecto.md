@@ -143,12 +143,16 @@ Actualmente el proyecto ya no se encuentra solo en fase de propuesta. A nivel te
 - `backend` con la `HU-003 - Consultar carrito`
 - `backend` con la `HU-004 - Actualizar cantidad de producto en el carrito`
 - `backend` con la `HU-005 - Eliminar producto del carrito`
+- `backend` con la `HU-006 - Calcular total del carrito`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts/{cartId}/items`
 - `gateway` consumiendo el backend a traves de `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `gateway` consumiendo el backend a traves de `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `gateway` consumiendo el backend a traves de `GET /api/v1/carts/{cartId}`
+- `gateway` consumiendo el backend a traves de `GET /api/v1/carts/{cartId}/total`
 - `docker-compose.yml` para levantar `postgres`, `backend` y `gateway`
+- `docker-compose.yml` con imagenes nombradas para `backend` y `gateway`
+- `docker-compose.yml` con `healthcheck` para coordinar el arranque entre servicios
 - `database/init.sql` para crear las tablas `carts` y `cart_items`
 - configuracion de PostgreSQL en `localhost:5020`
 
@@ -173,7 +177,7 @@ shopping_cart/
 |   |-- src/main/resources/application.yaml
 |   `-- Dockerfile
 |-- gateway/
-|   |-- src/test/java/shopping_cart/gateway/
+|   |-- src/test/java/shopping_cart/gateway/controller/
 |   |-- src/main/java/shopping_cart/gateway/config/
 |   |-- src/main/java/shopping_cart/gateway/controller/
 |   |-- src/main/java/shopping_cart/gateway/dto/
@@ -192,6 +196,7 @@ Endpoints actualmente disponibles a traves del `gateway`:
 - `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `GET /api/v1/carts/{cartId}`
+- `GET /api/v1/carts/{cartId}/total`
 
 Capacidades actuales del `backend`:
 
@@ -201,14 +206,17 @@ Capacidades actuales del `backend`:
 - actualizar explicitamente la cantidad de un item existente mediante `itemId`
 - eliminar explicitamente un item existente mediante `itemId`
 - consultar el carrito con sus items y el total acumulado
+- consultar un resumen especializado del total del carrito con `totalItems` y `totalAmount`
 
-Archivos representativos agregados o consolidados hasta la `HU-005`:
+Archivos representativos agregados o consolidados hasta la `HU-006`:
 
 - `backend/src/main/java/shopping_cart/backend/dto/UpdateCartItemQuantityRequestDTO.java`
 - `backend/src/main/java/shopping_cart/backend/dto/DeleteCartItemResponseDTO.java`
+- `backend/src/main/java/shopping_cart/backend/dto/CartTotalResponseDTO.java`
 - `gateway/src/main/java/shopping_cart/gateway/dto/UpdateCartItemQuantityRequestDTO.java`
 - `backend/src/main/java/shopping_cart/backend/controller/CartController.java`
 - `backend/src/main/java/shopping_cart/backend/service/CartServiceImpl.java`
 - `gateway/src/main/java/shopping_cart/gateway/controller/CartGatewayController.java`
 - `gateway/src/main/java/shopping_cart/gateway/service/CartGatewayService.java`
 - `backend/src/test/java/shopping_cart/backend/service/CartServiceImplTest.java`
+- `gateway/src/test/java/shopping_cart/gateway/controller/CartGatewayControllerTest.java`

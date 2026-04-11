@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
+import shopping_cart.backend.dto.CartTotalResponseDTO;
 import shopping_cart.backend.dto.DeleteCartItemResponseDTO;
 import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.entity.Cart;
@@ -256,6 +257,50 @@ class CartServiceImplTest {
     }
 
     @Test
+    void shouldReturnCartTotalSummary() {
+        Cart cart = Cart.builder()
+            .id(21L)
+            .userId(96L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(2))
+            .updatedAt(LocalDateTime.now().minusMinutes(25))
+            .build();
+
+        CartItem firstItem = CartItem.builder()
+            .id(71L)
+            .cart(cart)
+            .productId(1001L)
+            .name("SSD")
+            .quantity(2)
+            .price(new BigDecimal("200000.00"))
+            .subtotal(new BigDecimal("400000.00"))
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(15))
+            .build();
+
+        CartItem secondItem = CartItem.builder()
+            .id(72L)
+            .cart(cart)
+            .productId(1002L)
+            .name("RAM")
+            .quantity(3)
+            .price(new BigDecimal("150000.00"))
+            .subtotal(new BigDecimal("450000.00"))
+            .createdAt(LocalDateTime.now().minusMinutes(50))
+            .updatedAt(LocalDateTime.now().minusMinutes(5))
+            .build();
+
+        when(repository.findById(21L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findAllByCartIdOrderByIdAsc(21L)).thenReturn(List.of(firstItem, secondItem));
+
+        CartTotalResponseDTO response = service.getCartTotal(21L);
+
+        assertEquals(21L, response.cartId());
+        assertEquals(5, response.totalItems());
+        assertEquals(new BigDecimal("850000.00"), response.totalAmount());
+    }
+
+    @Test
     void shouldUpdateCartItemQuantity() {
         Cart cart = Cart.builder()
             .id(11L)
@@ -484,6 +529,26 @@ class CartServiceImplTest {
 
         assertTrue(response.items().isEmpty());
         assertEquals(BigDecimal.ZERO, response.total());
+    }
+
+    @Test
+    void shouldReturnCartTotalSummaryWithZeroValuesWhenCartIsEmpty() {
+        Cart cart = Cart.builder()
+            .id(22L)
+            .userId(97L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(10))
+            .build();
+
+        when(repository.findById(22L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findAllByCartIdOrderByIdAsc(22L)).thenReturn(List.of());
+
+        CartTotalResponseDTO response = service.getCartTotal(22L);
+
+        assertEquals(22L, response.cartId());
+        assertEquals(0, response.totalItems());
+        assertEquals(BigDecimal.ZERO, response.totalAmount());
     }
 
     @Test
