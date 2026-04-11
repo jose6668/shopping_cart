@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
+import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.entity.Cart;
 import shopping_cart.backend.entity.CartItem;
 import shopping_cart.backend.entity.CartStatus;
@@ -251,6 +252,116 @@ class CartServiceImplTest {
         assertEquals(40L, response.userId());
         assertEquals(2, response.items().size());
         assertEquals(new BigDecimal("360000.00"), response.total());
+    }
+
+    @Test
+    void shouldUpdateCartItemQuantity() {
+        Cart cart = Cart.builder()
+            .id(11L)
+            .userId(72L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(2))
+            .updatedAt(LocalDateTime.now().minusMinutes(12))
+            .build();
+
+        CartItem existingItem = CartItem.builder()
+            .id(31L)
+            .cart(cart)
+            .productId(900L)
+            .name("Monitor")
+            .quantity(1)
+            .price(new BigDecimal("450000.00"))
+            .subtotal(new BigDecimal("450000.00"))
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(10))
+            .build();
+
+        UpdateCartItemQuantityRequestDTO request = new UpdateCartItemQuantityRequestDTO(3);
+
+        when(repository.findById(11L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findById(31L)).thenReturn(Optional.of(existingItem));
+        when(cartItemRepository.save(existingItem)).thenReturn(existingItem);
+        when(repository.save(any(Cart.class))).thenReturn(cart);
+
+        CartItemResponseDTO response = service.updateCartItemQuantity(11L, 31L, request);
+
+        assertEquals(3, response.quantity());
+        assertEquals(new BigDecimal("1350000.00"), response.subtotal());
+        verify(cartItemRepository).save(existingItem);
+        verify(repository).save(cart);
+    }
+
+    @Test
+    void shouldFailToUpdateCartItemQuantityWhenItemDoesNotExist() {
+        UpdateCartItemQuantityRequestDTO request = new UpdateCartItemQuantityRequestDTO(2);
+
+        Cart cart = Cart.builder()
+            .id(12L)
+            .userId(80L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(5))
+            .build();
+
+        when(repository.findById(12L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.updateCartItemQuantity(12L, 999L, request));
+    }
+
+    @Test
+    void shouldFailToUpdateCartItemQuantityWhenItemBelongsToAnotherCart() {
+        Cart cart = Cart.builder()
+            .id(13L)
+            .userId(81L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(5))
+            .build();
+
+        Cart anotherCart = Cart.builder()
+            .id(14L)
+            .userId(82L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(2))
+            .updatedAt(LocalDateTime.now().minusMinutes(15))
+            .build();
+
+        CartItem existingItem = CartItem.builder()
+            .id(41L)
+            .cart(anotherCart)
+            .productId(700L)
+            .name("Tablet")
+            .quantity(1)
+            .price(new BigDecimal("800000.00"))
+            .subtotal(new BigDecimal("800000.00"))
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(10))
+            .build();
+
+        UpdateCartItemQuantityRequestDTO request = new UpdateCartItemQuantityRequestDTO(2);
+
+        when(repository.findById(13L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findById(41L)).thenReturn(Optional.of(existingItem));
+
+        assertThrows(BusinessValidationException.class, () -> service.updateCartItemQuantity(13L, 41L, request));
+    }
+
+    @Test
+    void shouldFailToUpdateCartItemQuantityWhenCartIsNotActive() {
+        Cart cart = Cart.builder()
+            .id(15L)
+            .userId(90L)
+            .status(CartStatus.CHECKED_OUT)
+            .createdAt(LocalDateTime.now().minusHours(3))
+            .updatedAt(LocalDateTime.now().minusMinutes(30))
+            .build();
+
+        UpdateCartItemQuantityRequestDTO request = new UpdateCartItemQuantityRequestDTO(2);
+
+        when(repository.findById(15L)).thenReturn(Optional.of(cart));
+
+        assertThrows(BusinessValidationException.class, () -> service.updateCartItemQuantity(15L, 1L, request));
     }
 
     @Test
