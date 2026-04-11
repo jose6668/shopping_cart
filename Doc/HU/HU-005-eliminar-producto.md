@@ -6,11 +6,11 @@
 
 ## Criterios de Aceptacion
 
-- [ ] El sistema permite eliminar un producto del carrito
-- [ ] El item eliminado deja de aparecer en la consulta del carrito
-- [ ] El total del carrito se recalcula despues de la eliminacion
-- [ ] Si el producto no existe en el carrito, el sistema responde adecuadamente
-- [ ] La eliminacion queda reflejada en la base de datos
+- [x] El sistema permite eliminar un producto del carrito
+- [x] El item eliminado deja de aparecer en la consulta del carrito
+- [x] El total del carrito se recalcula despues de la eliminacion
+- [x] Si el producto no existe en el carrito, el sistema responde adecuadamente
+- [x] La eliminacion queda reflejada en la base de datos
 
 ## Detalles Tecnicos
 

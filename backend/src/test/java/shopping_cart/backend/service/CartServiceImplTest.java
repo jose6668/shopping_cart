@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import shopping_cart.backend.dto.AddCartItemRequestDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
+import shopping_cart.backend.dto.DeleteCartItemResponseDTO;
 import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.entity.Cart;
 import shopping_cart.backend.entity.CartItem;
@@ -362,6 +363,108 @@ class CartServiceImplTest {
         when(repository.findById(15L)).thenReturn(Optional.of(cart));
 
         assertThrows(BusinessValidationException.class, () -> service.updateCartItemQuantity(15L, 1L, request));
+    }
+
+    @Test
+    void shouldDeleteCartItem() {
+        Cart cart = Cart.builder()
+            .id(16L)
+            .userId(91L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(2))
+            .updatedAt(LocalDateTime.now().minusMinutes(20))
+            .build();
+
+        CartItem existingItem = CartItem.builder()
+            .id(51L)
+            .cart(cart)
+            .productId(808L)
+            .name("Audifonos")
+            .quantity(1)
+            .price(new BigDecimal("95000.00"))
+            .subtotal(new BigDecimal("95000.00"))
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(10))
+            .build();
+
+        when(repository.findById(16L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findById(51L)).thenReturn(Optional.of(existingItem));
+        when(repository.save(any(Cart.class))).thenReturn(cart);
+
+        DeleteCartItemResponseDTO response = service.deleteCartItem(16L, 51L);
+
+        assertEquals("Item eliminado correctamente del carrito", response.message());
+        assertEquals(16L, response.cartId());
+        assertEquals(51L, response.itemId());
+        verify(cartItemRepository).delete(existingItem);
+        verify(repository).save(cart);
+    }
+
+    @Test
+    void shouldFailToDeleteCartItemWhenItemDoesNotExist() {
+        Cart cart = Cart.builder()
+            .id(17L)
+            .userId(92L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(5))
+            .build();
+
+        when(repository.findById(17L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.deleteCartItem(17L, 999L));
+    }
+
+    @Test
+    void shouldFailToDeleteCartItemWhenItemBelongsToAnotherCart() {
+        Cart cart = Cart.builder()
+            .id(18L)
+            .userId(93L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(5))
+            .build();
+
+        Cart anotherCart = Cart.builder()
+            .id(19L)
+            .userId(94L)
+            .status(CartStatus.ACTIVE)
+            .createdAt(LocalDateTime.now().minusHours(2))
+            .updatedAt(LocalDateTime.now().minusMinutes(15))
+            .build();
+
+        CartItem existingItem = CartItem.builder()
+            .id(61L)
+            .cart(anotherCart)
+            .productId(909L)
+            .name("Camara")
+            .quantity(1)
+            .price(new BigDecimal("500000.00"))
+            .subtotal(new BigDecimal("500000.00"))
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .updatedAt(LocalDateTime.now().minusMinutes(10))
+            .build();
+
+        when(repository.findById(18L)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findById(61L)).thenReturn(Optional.of(existingItem));
+
+        assertThrows(BusinessValidationException.class, () -> service.deleteCartItem(18L, 61L));
+    }
+
+    @Test
+    void shouldFailToDeleteCartItemWhenCartIsNotActive() {
+        Cart cart = Cart.builder()
+            .id(20L)
+            .userId(95L)
+            .status(CartStatus.CHECKED_OUT)
+            .createdAt(LocalDateTime.now().minusHours(3))
+            .updatedAt(LocalDateTime.now().minusMinutes(30))
+            .build();
+
+        when(repository.findById(20L)).thenReturn(Optional.of(cart));
+
+        assertThrows(BusinessValidationException.class, () -> service.deleteCartItem(20L, 1L));
     }
 
     @Test
