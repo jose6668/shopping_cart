@@ -27,6 +27,12 @@ public class CartGatewayService {
             .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
     }
 
+    public ResponseEntity<String> getCartById(Long cartId) {
+        return backendRestClient.get()
+            .uri("/api/v1/carts/{cartId}", cartId)
+            .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
+    }
+
     public ResponseEntity<String> addItemToCart(Long cartId, AddCartItemRequestDTO request) {
         return backendRestClient.post()
             .uri("/api/v1/carts/{cartId}/items", cartId)

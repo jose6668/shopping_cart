@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,13 @@ public class CartGatewayController {
     @PostMapping
     public ResponseEntity<String> createCart(@Valid @RequestBody CreateCartRequestDTO request) {
         return cartGatewayService.createCart(request);
+    }
+
+    @GetMapping("/{cartId}")
+    public ResponseEntity<String> getCartById(
+        @PathVariable @Positive(message = "cartId must be a positive number") Long cartId
+    ) {
+        return cartGatewayService.getCartById(cartId);
     }
 
     @PostMapping("/{cartId}/items")
