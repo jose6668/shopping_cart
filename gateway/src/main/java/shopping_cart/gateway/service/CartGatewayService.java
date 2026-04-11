@@ -50,6 +50,12 @@ public class CartGatewayService {
             .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
     }
 
+    public ResponseEntity<String> deleteCartItem(Long cartId, Long itemId) {
+        return backendRestClient.delete()
+            .uri("/api/v1/carts/{cartId}/items/{itemId}", cartId, itemId)
+            .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
+    }
+
     private ResponseEntity<String> mapBackendResponse(HttpRequest clientRequest, ClientHttpResponse clientResponse) {
         try {
             String responseBody = new String(
