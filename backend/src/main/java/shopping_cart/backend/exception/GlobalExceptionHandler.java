@@ -56,6 +56,26 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(ResourceNotFoundException exception) {
+        return buildResponse(
+            HttpStatus.NOT_FOUND,
+            "Recurso no encontrado",
+            exception.getMessage(),
+            List.of(exception.getMessage())
+        );
+    }
+
+    @ExceptionHandler(BusinessValidationException.class)
+    public ResponseEntity<ApiErrorResponse> handleBusinessValidation(BusinessValidationException exception) {
+        return buildResponse(
+            HttpStatus.BAD_REQUEST,
+            "Regla de negocio invalida",
+            exception.getMessage(),
+            List.of(exception.getMessage())
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedException(Exception exception) {
         return buildResponse(
