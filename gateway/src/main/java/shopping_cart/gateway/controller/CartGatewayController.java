@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,5 +55,13 @@ public class CartGatewayController {
         @Valid @RequestBody UpdateCartItemQuantityRequestDTO request
     ) {
         return cartGatewayService.updateCartItemQuantity(cartId, itemId, request);
+    }
+
+    @DeleteMapping("/{cartId}/items/{itemId}")
+    public ResponseEntity<String> deleteCartItem(
+        @PathVariable @Positive(message = "cartId must be a positive number") Long cartId,
+        @PathVariable @Positive(message = "itemId must be a positive number") Long itemId
+    ) {
+        return cartGatewayService.deleteCartItem(cartId, itemId);
     }
 }

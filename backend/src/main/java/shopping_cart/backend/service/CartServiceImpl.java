@@ -10,6 +10,7 @@ import shopping_cart.backend.dto.CartDetailItemResponseDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
+import shopping_cart.backend.dto.DeleteCartItemResponseDTO;
 import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.entity.Cart;
 import shopping_cart.backend.entity.CartItem;
@@ -99,6 +100,36 @@ public class CartServiceImpl implements ICartService {
         cartRepository.save(cart);
 
         return toItemResponse(savedItem);
+    }
+
+    @Override
+    @Transactional
+    public DeleteCartItemResponseDTO deleteCartItem(Long cartId, Long itemId) {
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("No existe un carrito con id " + cartId));
+
+        if (cart.getStatus() != CartStatus.ACTIVE) {
+            throw new BusinessValidationException("Solo se pueden eliminar productos de carritos activos");
+        }
+
+        CartItem cartItem = cartItemRepository.findById(itemId)
+            .orElseThrow(() -> new ResourceNotFoundException("No existe un item de carrito con id " + itemId));
+
+        if (!cart.getId().equals(cartItem.getCart().getId())) {
+            throw new BusinessValidationException(
+                "El item con id " + itemId + " no pertenece al carrito con id " + cartId
+            );
+        }
+
+        cartItemRepository.delete(cartItem);
+        cart.touch();
+        cartRepository.save(cart);
+
+        return new DeleteCartItemResponseDTO(
+            "Item eliminado correctamente del carrito",
+            cartId,
+            itemId
+        );
     }
 
     @Override

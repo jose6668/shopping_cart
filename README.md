@@ -13,6 +13,7 @@ Actualmente se encuentran implementadas:
 - `HU-002 - Agregar producto al carrito`
 - `HU-003 - Consultar carrito`
 - `HU-004 - Actualizar cantidad de producto en el carrito`
+- `HU-005 - Eliminar producto del carrito`
 
 Flujo disponible:
 - el cliente consume el `gateway`
@@ -20,6 +21,7 @@ Flujo disponible:
 - el `backend` crea o reutiliza el carrito activo
 - el `backend` permite agregar productos al carrito existente
 - el `backend` permite actualizar la cantidad de un item existente del carrito
+- el `backend` permite eliminar un item existente del carrito
 - el `backend` permite consultar el carrito con sus items y el total acumulado
 - si el producto ya existe en el carrito, actualiza la cantidad
 - PostgreSQL persiste la informacion del carrito y sus items
@@ -35,6 +37,7 @@ Flujo disponible:
 - `POST /api/v1/carts`
 - `POST /api/v1/carts/{cartId}/items`
 - `PUT /api/v1/carts/{cartId}/items/{itemId}`
+- `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `GET /api/v1/carts/{cartId}`
 
 Ejemplo de request:
@@ -96,4 +99,16 @@ Tambien puedes actualizar la cantidad de un item existente:
 curl -X PUT http://localhost:8080/api/v1/carts/1/items/1 ^
   -H "Content-Type: application/json" ^
   -d "{\"quantity\":4}"
+```
+
+Y tambien puedes eliminar un item existente del carrito:
+
+```bash
+curl -X DELETE http://localhost:8080/api/v1/carts/1/items/1
+```
+
+Despues puedes volver a consultar el carrito para verificar que el item ya no aparece y que el total fue recalculado:
+
+```bash
+curl -X GET http://localhost:8080/api/v1/carts/1
 ```
