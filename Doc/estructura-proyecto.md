@@ -139,9 +139,13 @@ La estructura propuesta para `shopping_cart` busca adaptar la idea de monorepo d
 Actualmente el proyecto ya no se encuentra solo en fase de propuesta. A nivel tecnico ya tiene implementado:
 
 - `backend` con la `HU-001 - Crear carrito de compras`
+- `backend` con la `HU-002 - Agregar producto al carrito`
+- `backend` con la `HU-003 - Consultar carrito`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts`
+- `gateway` consumiendo el backend a traves de `POST /api/v1/carts/{cartId}/items`
+- `gateway` consumiendo el backend a traves de `GET /api/v1/carts/{cartId}`
 - `docker-compose.yml` para levantar `postgres`, `backend` y `gateway`
-- `database/init.sql` para crear la tabla `carts`
+- `database/init.sql` para crear las tablas `carts` y `cart_items`
 - configuracion de PostgreSQL en `localhost:5020`
 
 Estructura real actualmente usada:
@@ -171,3 +175,16 @@ shopping_cart/
 |   `-- init.sql
 `-- frontend/
 ```
+
+Endpoints actualmente disponibles a traves del `gateway`:
+
+- `POST /api/v1/carts`
+- `POST /api/v1/carts/{cartId}/items`
+- `GET /api/v1/carts/{cartId}`
+
+Capacidades actuales del `backend`:
+
+- crear o reutilizar un carrito activo por usuario
+- agregar productos al carrito existente
+- actualizar la cantidad acumulada si el producto ya estaba agregado
+- consultar el carrito con sus items y el total acumulado

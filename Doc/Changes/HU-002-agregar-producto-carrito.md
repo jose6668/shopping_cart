@@ -4,7 +4,7 @@
 - HU: `HU-002`
 - Nombre: Agregar producto al carrito
 - Microservicio: `shopping-cart`
-- Estado: Propuesta funcional para implementacion en backend, gateway y base de datos
+- Estado: Implementada en backend, gateway y base de datos
 - Rama de trabajo sugerida: `HU-002-back-dev`
 
 ## 2. Objetivo de la HU
@@ -295,7 +295,7 @@ Esto permite que el frontend o el gateway conozcan el estado actualizado del ite
 - Confirmar si la unicidad funcional del item sera por `cartId + productId`.
 
 ## 20. Estado de este documento
-Este documento deja definida la propuesta funcional y tecnica inicial para implementar la `HU-002 - Agregar producto al carrito`, alineada con:
+Este documento deja trazada la implementacion funcional y tecnica de la `HU-002 - Agregar producto al carrito`, alineada con:
 - la HU original del proyecto
 - el formato de cambios ya usado en `HU-001`
 - la estructura tipo Spring Boot actual del backend
