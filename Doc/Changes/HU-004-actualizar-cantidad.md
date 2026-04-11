@@ -4,7 +4,7 @@
 - HU: `HU-004`
 - Nombre: Actualizar cantidad de producto en el carrito
 - Microservicio: `shopping-cart`
-- Estado: Propuesta funcional para implementacion en backend y gateway
+- Estado: Implementada en backend y gateway
 - Rama de trabajo sugerida: `HU-004-back-dev`
 
 ## 2. Objetivo de la HU
@@ -235,26 +235,26 @@ En la implementacion minima propuesta:
 
 ## 16. Implementacion tecnica sugerida
 - `CartController`
-  - crear endpoint `PUT /api/v1/carts/{cartId}/items/{itemId}`
+  - endpoint implementado `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `ICartService`
-  - definir metodo para actualizar cantidad de item
+  - metodo implementado para actualizar cantidad de item
 - `CartServiceImpl`
-  - validar `cartId`
-  - validar `itemId`
-  - buscar item existente
-  - comprobar pertenencia al carrito
-  - actualizar cantidad
-  - recalcular subtotal
+  - valida `cartId`
+  - valida `itemId`
+  - busca item existente
+  - comprueba pertenencia al carrito
+  - actualiza cantidad
+  - recalcula subtotal
 - `CartItemRepository`
-  - agregar o reutilizar consulta para localizar el item dentro del carrito
+  - reutiliza la consulta por `id` del item
 - `UpdateCartItemQuantityRequestDTO`
-  - representar el payload de entrada
+  - DTO implementado para representar el payload de entrada
 - `CartItemResponseDTO`
-  - reutilizar o adaptar respuesta de item actualizado
+  - reutilizado para responder el item actualizado
 - `GlobalExceptionHandler`
-  - devolver errores controlados
+  - devuelve errores controlados
 - `gateway`
-  - exponer o enrutar la nueva operacion hacia backend
+  - expone y enruta la nueva operacion hacia backend
 
 ## 17. Criterios de aceptacion propuestos
 1. Debe existir un endpoint backend para actualizar la cantidad de un producto existente en el carrito.
@@ -291,9 +291,11 @@ En la implementacion minima propuesta:
 - Validar si el gateway mantendra el contrato como texto crudo o si luego evolucionara a DTOs tipados.
 
 ## 20. Estado de este documento
-Este documento deja definida la propuesta funcional y tecnica inicial para implementar la `HU-004 - Actualizar cantidad de producto en el carrito`, alineada con:
+Este documento deja registrada la implementacion funcional y tecnica de la `HU-004 - Actualizar cantidad de producto en el carrito`, alineada con:
 - la HU original del proyecto
 - el formato de cambios ya usado en `HU-001`, `HU-002` y `HU-003`
 - la estructura actual del backend y del gateway
 - el modelo de datos ya existente en `carts` y `cart_items`
 - la necesidad de permitir ajustes de cantidad antes de continuar con el flujo de compra
+
+Adicionalmente, la implementacion fue verificada con pruebas del modulo `backend` y del modulo `gateway`.
