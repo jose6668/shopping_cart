@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
 import shopping_cart.backend.dto.CreateCartRequestDTO;
+import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.service.CartCreationResult;
 import shopping_cart.backend.service.ICartService;
 
@@ -51,5 +53,14 @@ public class CartController {
     ) {
         CartItemResponseDTO response = cartService.addItemToCart(cartId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{cartId}/items/{itemId}")
+    public ResponseEntity<CartItemResponseDTO> updateCartItemQuantity(
+        @PathVariable @Positive(message = "cartId debe ser un valor positivo") Long cartId,
+        @PathVariable @Positive(message = "itemId debe ser un valor positivo") Long itemId,
+        @Valid @RequestBody UpdateCartItemQuantityRequestDTO request
+    ) {
+        return ResponseEntity.ok(cartService.updateCartItemQuantity(cartId, itemId, request));
     }
 }

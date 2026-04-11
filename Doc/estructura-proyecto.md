@@ -141,8 +141,10 @@ Actualmente el proyecto ya no se encuentra solo en fase de propuesta. A nivel te
 - `backend` con la `HU-001 - Crear carrito de compras`
 - `backend` con la `HU-002 - Agregar producto al carrito`
 - `backend` con la `HU-003 - Consultar carrito`
+- `backend` con la `HU-004 - Actualizar cantidad de producto en el carrito`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts/{cartId}/items`
+- `gateway` consumiendo el backend a traves de `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `gateway` consumiendo el backend a traves de `GET /api/v1/carts/{cartId}`
 - `docker-compose.yml` para levantar `postgres`, `backend` y `gateway`
 - `database/init.sql` para crear las tablas `carts` y `cart_items`
@@ -155,7 +157,11 @@ shopping_cart/
 |-- README.md
 |-- docker-compose.yml
 |-- Doc/
+|   |-- Changes/
+|   |-- Diagramas/
+|   `-- HU/
 |-- backend/
+|   |-- src/test/java/shopping_cart/backend/service/
 |   |-- src/main/java/shopping_cart/backend/controller/
 |   |-- src/main/java/shopping_cart/backend/dto/
 |   |-- src/main/java/shopping_cart/backend/entity/
@@ -165,6 +171,7 @@ shopping_cart/
 |   |-- src/main/resources/application.yaml
 |   `-- Dockerfile
 |-- gateway/
+|   |-- src/test/java/shopping_cart/gateway/
 |   |-- src/main/java/shopping_cart/gateway/config/
 |   |-- src/main/java/shopping_cart/gateway/controller/
 |   |-- src/main/java/shopping_cart/gateway/dto/
@@ -173,13 +180,14 @@ shopping_cart/
 |   `-- Dockerfile
 |-- database/
 |   `-- init.sql
-`-- frontend/
+`-- sin carpeta `frontend` implementada actualmente
 ```
 
 Endpoints actualmente disponibles a traves del `gateway`:
 
 - `POST /api/v1/carts`
 - `POST /api/v1/carts/{cartId}/items`
+- `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `GET /api/v1/carts/{cartId}`
 
 Capacidades actuales del `backend`:
@@ -187,4 +195,15 @@ Capacidades actuales del `backend`:
 - crear o reutilizar un carrito activo por usuario
 - agregar productos al carrito existente
 - actualizar la cantidad acumulada si el producto ya estaba agregado
+- actualizar explicitamente la cantidad de un item existente mediante `itemId`
 - consultar el carrito con sus items y el total acumulado
+
+Archivos representativos agregados o consolidados con la `HU-004`:
+
+- `backend/src/main/java/shopping_cart/backend/dto/UpdateCartItemQuantityRequestDTO.java`
+- `gateway/src/main/java/shopping_cart/gateway/dto/UpdateCartItemQuantityRequestDTO.java`
+- `backend/src/main/java/shopping_cart/backend/controller/CartController.java`
+- `backend/src/main/java/shopping_cart/backend/service/CartServiceImpl.java`
+- `gateway/src/main/java/shopping_cart/gateway/controller/CartGatewayController.java`
+- `gateway/src/main/java/shopping_cart/gateway/service/CartGatewayService.java`
+- `backend/src/test/java/shopping_cart/backend/service/CartServiceImplTest.java`
