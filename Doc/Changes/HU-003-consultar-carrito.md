@@ -4,7 +4,7 @@
 - HU: `HU-003`
 - Nombre: Consultar carrito
 - Microservicio: `shopping-cart`
-- Estado: Propuesta funcional y tecnica para implementacion en backend y gateway
+- Estado: Implementada en backend y gateway
 - Rama de trabajo sugerida: `HU-003-back-dev`
 
 ## 2. Objetivo de la HU
@@ -184,7 +184,7 @@ Tomando como base la estructura actual del backend, la implementacion deberia or
   - listar items por `cartId`
 - `dto/CartDetailResponseDTO.java`
   - representar la respuesta completa del carrito
-- `dto/CartItemDetailDTO.java`
+- `dto/CartDetailItemResponseDTO.java`
   - representar cada item dentro de la consulta
 - `exception/GlobalExceptionHandler.java`
   - devolver error controlado si el carrito no existe
@@ -247,22 +247,22 @@ Esto permite que el frontend muestre tanto carritos con contenido como carritos 
 
 ## 16. Implementacion tecnica sugerida
 - `CartController`
-  - crear endpoint `GET /api/v1/carts/{cartId}`
+  - endpoint implementado `GET /api/v1/carts/{cartId}`
 - `ICartService`
-  - definir metodo para consultar un carrito por `id`
+  - metodo implementado para consultar un carrito por `id`
 - `CartServiceImpl`
-  - validar existencia del carrito
-  - consultar items relacionados
-  - sumar subtotales para obtener el total
-  - mapear la respuesta consolidada
+  - valida existencia del carrito
+  - consulta items relacionados
+  - suma subtotales para obtener el total
+  - mapea la respuesta consolidada
 - `CartItemRepository`
-  - crear consulta para listar items por `cartId`
-- `CartDetailResponseDTO` y `CartItemDetailDTO`
-  - separar la respuesta de detalle respecto a los DTO usados en creacion y adicion de items
+  - consulta implementada para listar items por `cartId`
+- `CartDetailResponseDTO` y `CartDetailItemResponseDTO`
+  - DTOs implementados para separar la respuesta de detalle respecto a los contratos de creacion y adicion de items
 - `GlobalExceptionHandler`
-  - responder con error controlado cuando el carrito no exista
+  - responde con error controlado cuando el carrito no existe
 - `gateway`
-  - exponer o enrutar la nueva operacion hacia backend
+  - expone y enruta la nueva operacion hacia backend
 
 ## 17. Criterios de aceptacion propuestos
 1. Debe existir un endpoint backend para consultar un carrito por su identificador.
@@ -280,13 +280,11 @@ Esto permite que el frontend muestre tanto carritos con contenido como carritos 
 - `backend/src/main/java/shopping_cart/backend/service/ICartService.java`
 - `backend/src/main/java/shopping_cart/backend/service/CartServiceImpl.java`
 - `backend/src/main/java/shopping_cart/backend/repository/CartItemRepository.java`
-- `backend/src/main/java/shopping_cart/backend/repository/CartRepository.java`
 - `backend/src/main/java/shopping_cart/backend/dto/CartDetailResponseDTO.java`
-- `backend/src/main/java/shopping_cart/backend/dto/CartItemDetailDTO.java`
+- `backend/src/main/java/shopping_cart/backend/dto/CartDetailItemResponseDTO.java`
 - `backend/src/main/java/shopping_cart/backend/exception/GlobalExceptionHandler.java`
 - `gateway/src/main/java/shopping_cart/gateway/controller/CartGatewayController.java`
 - `gateway/src/main/java/shopping_cart/gateway/service/CartGatewayService.java`
-- `gateway/src/main/resources/application.yaml`
 - `backend/src/test/java/...`
 - `gateway/src/test/java/...`
 
@@ -298,9 +296,11 @@ Esto permite que el frontend muestre tanto carritos con contenido como carritos 
 - Validar si el gateway devolvera la respuesta tal cual del backend o si luego incorporara transformaciones adicionales.
 
 ## 20. Estado de este documento
-Este documento deja trazada la propuesta funcional y tecnica de la `HU-003 - Consultar carrito`, alineada con:
+Este documento deja registrada la implementacion funcional y tecnica de la `HU-003 - Consultar carrito`, alineada con:
 - la HU original del proyecto
 - el formato de cambios ya usado en `HU-001` y `HU-002`
 - la estructura actual del backend y del gateway
 - el modelo de datos ya existente en `carts` y `cart_items`
 - la necesidad de exponer una vista consolidada del carrito para continuar con el flujo de compra
+
+Adicionalmente, la implementacion fue verificada con pruebas del modulo `backend` y del modulo `gateway`.
