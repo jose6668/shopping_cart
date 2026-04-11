@@ -9,11 +9,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shopping_cart.gateway.dto.AddCartItemRequestDTO;
 import shopping_cart.gateway.dto.CreateCartRequestDTO;
+import shopping_cart.gateway.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.gateway.service.CartGatewayService;
 
 @RestController
@@ -43,5 +45,14 @@ public class CartGatewayController {
         @Valid @RequestBody AddCartItemRequestDTO request
     ) {
         return cartGatewayService.addItemToCart(cartId, request);
+    }
+
+    @PutMapping("/{cartId}/items/{itemId}")
+    public ResponseEntity<String> updateCartItemQuantity(
+        @PathVariable @Positive(message = "cartId must be a positive number") Long cartId,
+        @PathVariable @Positive(message = "itemId must be a positive number") Long itemId,
+        @Valid @RequestBody UpdateCartItemQuantityRequestDTO request
+    ) {
+        return cartGatewayService.updateCartItemQuantity(cartId, itemId, request);
     }
 }

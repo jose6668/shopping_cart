@@ -10,6 +10,7 @@ import shopping_cart.backend.dto.CartDetailItemResponseDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
+import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
 import shopping_cart.backend.entity.Cart;
 import shopping_cart.backend.entity.CartItem;
 import shopping_cart.backend.entity.CartStatus;
@@ -64,6 +65,34 @@ public class CartServiceImpl implements ICartService {
                 .quantity(request.quantity())
                 .price(normalizedPrice)
                 .build());
+
+        CartItem savedItem = cartItemRepository.save(cartItem);
+        cart.touch();
+        cartRepository.save(cart);
+
+        return toItemResponse(savedItem);
+    }
+
+    @Override
+    @Transactional
+    public CartItemResponseDTO updateCartItemQuantity(Long cartId, Long itemId, UpdateCartItemQuantityRequestDTO request) {
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("No existe un carrito con id " + cartId));
+
+        if (cart.getStatus() != CartStatus.ACTIVE) {
+            throw new BusinessValidationException("Solo se pueden actualizar productos en carritos activos");
+        }
+
+        CartItem cartItem = cartItemRepository.findById(itemId)
+            .orElseThrow(() -> new ResourceNotFoundException("No existe un item de carrito con id " + itemId));
+
+        if (!cart.getId().equals(cartItem.getCart().getId())) {
+            throw new BusinessValidationException(
+                "El item con id " + itemId + " no pertenece al carrito con id " + cartId
+            );
+        }
+
+        cartItem.updateQuantity(request.quantity());
 
         CartItem savedItem = cartItemRepository.save(cartItem);
         cart.touch();
