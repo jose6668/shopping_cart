@@ -4,7 +4,7 @@
 - HU: `HU-007`
 - Nombre: Visualizar y gestionar el carrito desde frontend por medio del API Gateway
 - Componentes involucrados: `frontend`, `gateway`, `backend`
-- Estado: Propuesta funcional y tecnica para implementacion en frontend Vue con integracion por gateway
+- Estado: Implementada en frontend Vue con integracion por gateway y despliegue por Docker Compose
 - Rama de trabajo sugerida: `HU-007-front-dev`
 
 ## 2. Objetivo de la HU
@@ -21,7 +21,7 @@ La HU base indica que el sistema debe:
 Adicionalmente, segun tu indicacion, esta HU debe plantearse con una arquitectura frontend modular inspirada en la referencia visual compartida, adaptada a `Vue`.
 
 ## 3. Justificacion funcional
-Actualmente el proyecto cuenta con backend y gateway para gestionar el carrito, pero no con una interfaz visual que permita al usuario operar sobre esas capacidades de forma directa.
+Actualmente el proyecto ya cuenta con backend, gateway y una interfaz visual en `Vue` que permite al usuario operar sobre las capacidades del carrito de forma directa.
 
 Esto genera un vacio funcional porque:
 - las HU previas quedan limitadas a consumo tecnico por endpoint
@@ -34,7 +34,7 @@ Por lo tanto, esta HU no consiste solo en construir una pantalla.
 Tambien define como el frontend se organiza, como se comunica con gateway y como representa visualmente el ciclo completo del carrito.
 
 ## 4. Justificacion del componente seleccionado
-La HU debe implementarse principalmente en un nuevo componente `frontend` porque alli residira la experiencia visual del usuario.
+La HU se implementa principalmente en el componente `frontend` porque alli reside la experiencia visual del usuario.
 
 Sin embargo, la solucion depende tambien de:
 - `gateway`, que expone el punto unico de entrada para el frontend
@@ -91,7 +91,7 @@ Resultado esperado:
 - la UI se mantiene consistente con los contratos ya definidos por las HU anteriores
 
 ## 8. Alcance funcional propuesto
-Se propone construir una interfaz web para el carrito con las siguientes capacidades:
+La interfaz web implementada para el carrito cubre las siguientes capacidades:
 - visualizar carrito por `cartId`
 - mostrar productos agregados
 - agregar nuevos productos al carrito
@@ -158,10 +158,10 @@ El frontend debe validar como minimo:
 7. la interfaz debe reflejar errores controlados retornados por gateway
 8. el total mostrado debe obtenerse del backend y no de un calculo aislado en cliente como fuente unica
 
-## 12. Arquitectura frontend propuesta en Vue
-Siguiendo tu indicacion y la imagen de arquitectura compartida, se propone crear un frontend en `Vue 3` con `Vite`, organizado en capas funcionales similares a la referencia, pero adaptadas al ecosistema Vue.
+## 12. Arquitectura frontend implementada en Vue
+Siguiendo tu indicacion y la imagen de arquitectura compartida, se implemento un frontend en `Vue 3` con `Vite`, organizado en capas funcionales similares a la referencia, pero adaptadas al ecosistema Vue.
 
-Estructura propuesta:
+Estructura implementada:
 - `frontend/public`
 - `frontend/src/api`
 - `frontend/src/assets`
@@ -175,7 +175,7 @@ Estructura propuesta:
 - `frontend/src/router`
 - `frontend/src/App.vue`
 
-Distribucion sugerida:
+Distribucion aplicada:
 - `api`
   - configuracion de cliente HTTP
   - interceptores
@@ -199,11 +199,12 @@ Distribucion sugerida:
 - `router`
   - rutas del frontend si luego se expande a multiples vistas
 
-## 13. Trazabilidad tecnica propuesta
-Tomando como base la arquitectura deseada, la implementacion deberia distribuirse asi:
+## 13. Trazabilidad tecnica implementada
+Tomando como base la arquitectura definida, la implementacion quedo distribuida asi:
 
 - `frontend/src/api/httpClient.js`
   - configura `axios` con la URL base del `gateway`
+  - centraliza el manejo base de errores HTTP
 - `frontend/src/services/cartService.js`
   - encapsula llamadas HTTP del carrito
 - `frontend/src/stores/cartStore.js`
@@ -222,6 +223,11 @@ Tomando como base la arquitectura deseada, la implementacion deberia distribuirs
   - ensambla la vista principal del HU
 - `frontend/src/layouts/MainLayout.vue`
   - contenedor visual general de la pagina
+- `frontend/Dockerfile`
+  - construye el frontend con Node
+  - publica la aplicacion compilada con Nginx
+- `docker-compose.yml`
+  - incorpora el servicio `frontend` en `5173`
 
 ## 14. Propuesta de experiencia visual basada en la referencia
 La pantalla principal debe conservar una linea visual limpia y centrada en productividad.
@@ -279,15 +285,16 @@ Y para el resumen especializado:
 }
 ```
 
-## 16. Implementacion tecnica sugerida
-- crear el proyecto frontend con `Vue 3`
-- usar `Vite` como base de construccion
-- usar `axios` para consumo HTTP
-- usar `Pinia` para estado global del carrito
-- crear servicios dedicados para consumo del `gateway`
-- modelar una pagina principal del carrito con componentes reutilizables
-- usar `CSS` modular o una organizacion clara de estilos para conservar la estructura visual propuesta
-- parametrizar la URL del `gateway` mediante variables de entorno
+## 16. Implementacion tecnica realizada
+- se creo el proyecto frontend con `Vue 3`
+- se uso `Vite` como base de construccion
+- se configuro `axios` para consumo HTTP
+- se implemento `Pinia` para estado global del carrito
+- se crearon servicios dedicados para consumo del `gateway`
+- se modelo una pagina principal del carrito con componentes reutilizables
+- se implemento una capa visual responsiva alineada con el layout de referencia
+- se parametrizo la URL del `gateway` mediante variables de entorno
+- se agrego `Dockerfile` para ejecutar el frontend mediante `docker compose`
 
 ## 17. Criterios de aceptacion propuestos
 1. Debe existir un frontend implementado en `Vue`.
@@ -302,11 +309,14 @@ Y para el resumen especializado:
 10. La interfaz debe seguir una arquitectura modular compatible con la estructura propuesta para `Vue`.
 11. La vista debe adaptarse correctamente a escritorio y pantallas pequenas.
 
-## 18. Archivos candidatos a creacion o modificacion
+## 18. Archivos creados o modificados
 - `frontend/package.json`
+- `frontend/package-lock.json`
 - `frontend/vite.config.js`
 - `frontend/index.html`
 - `frontend/.env`
+- `frontend/.dockerignore`
+- `frontend/Dockerfile`
 - `frontend/src/main.js`
 - `frontend/src/App.vue`
 - `frontend/src/router/index.js`
@@ -321,6 +331,8 @@ Y para el resumen especializado:
 - `frontend/src/components/cart/CartSummary.vue`
 - `frontend/src/components/cart/CartHeader.vue`
 - `frontend/src/assets/styles/main.css`
+- `docker-compose.yml`
+- `README.md`
 - `Doc/Changes/HU-007-frontend-gateway.md`
 
 ## 19. Riesgos o validaciones previas
@@ -331,10 +343,11 @@ Y para el resumen especializado:
 - Validar si se usara solo `Vue + Pinia` o si se incorporara alguna libreria de componentes adicional.
 
 ## 20. Estado de este documento
-Este documento deja definida la propuesta funcional y tecnica inicial para implementar la `HU-007 - Visualizar y gestionar el carrito desde frontend por medio del API Gateway`, alineada con:
+Este documento deja registrada la implementacion funcional y tecnica de la `HU-007 - Visualizar y gestionar el carrito desde frontend por medio del API Gateway`, alineada con:
 - la HU original del proyecto
 - el formato documental usado en los archivos de `Changes`
 - el estilo de documentacion observado en el ejemplo `HU-016`
 - la necesidad de usar `Vue` como framework frontend
 - la arquitectura modular inspirada en la referencia visual compartida
 - la integracion centralizada a traves del `API Gateway`
+- la ejecucion completa del entorno mediante `Docker Compose`
