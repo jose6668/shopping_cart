@@ -1,6 +1,7 @@
 # shopping_cart
 
 Proyecto de carrito de compras con arquitectura basada en:
+- `frontend` Vue 3 para la interfaz visual del carrito
 - `backend` Spring Boot para la logica del microservicio
 - `gateway` Spring Boot como punto de entrada para el frontend
 - `PostgreSQL` como base de datos
@@ -15,6 +16,7 @@ Actualmente se encuentran implementadas:
 - `HU-004 - Actualizar cantidad de producto en el carrito`
 - `HU-005 - Eliminar producto del carrito`
 - `HU-006 - Calcular total del carrito`
+- `HU-007 - Visualizar y gestionar el carrito desde frontend por medio del API Gateway`
 
 Flujo disponible:
 - el cliente consume el `gateway`
@@ -30,6 +32,7 @@ Flujo disponible:
 
 ## Servicios y puertos
 
+- `frontend`: `http://localhost:5173`
 - `gateway`: `http://localhost:8080`
 - `backend`: `http://localhost:8081`
 - `postgres`: `localhost:5020`
@@ -57,6 +60,18 @@ Ejemplo de request:
 docker compose up --build
 ```
 
+Con este comando se levantan:
+- `frontend`
+- `gateway`
+- `backend`
+- `postgres`
+
+El frontend Vue queda disponible en:
+
+```bash
+http://localhost:5173
+```
+
 Para levantarlo en segundo plano y reconstruir imagenes cuando haya cambios:
 
 ```bash
@@ -64,8 +79,9 @@ docker compose up -d --build
 ```
 
 El archivo `docker-compose.yml` actual:
+- incluye el `frontend` en un contenedor propio servido con Nginx
 - conserva la base de datos mediante el volumen `postgres_data`
-- asigna nombre fijo a las imagenes de `backend` y `gateway`
+- asigna nombre fijo a las imagenes de `frontend`, `backend` y `gateway`
 - agrega `healthcheck` para coordinar mejor el arranque de servicios
 
 Si deseas reiniciar completamente la base de datos e inicializar de nuevo el script SQL:
