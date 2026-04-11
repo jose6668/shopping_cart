@@ -19,6 +19,7 @@ import shopping_cart.backend.dto.AddCartItemRequestDTO;
 import shopping_cart.backend.dto.CartDetailResponseDTO;
 import shopping_cart.backend.dto.CartItemResponseDTO;
 import shopping_cart.backend.dto.CartResponseDTO;
+import shopping_cart.backend.dto.CartTotalResponseDTO;
 import shopping_cart.backend.dto.CreateCartRequestDTO;
 import shopping_cart.backend.dto.DeleteCartItemResponseDTO;
 import shopping_cart.backend.dto.UpdateCartItemQuantityRequestDTO;
@@ -46,6 +47,13 @@ public class CartController {
         @PathVariable @Positive(message = "cartId debe ser un valor positivo") Long cartId
     ) {
         return ResponseEntity.ok(cartService.getCartById(cartId));
+    }
+
+    @GetMapping("/{cartId}/total")
+    public ResponseEntity<CartTotalResponseDTO> getCartTotal(
+        @PathVariable @Positive(message = "cartId debe ser un valor positivo") Long cartId
+    ) {
+        return ResponseEntity.ok(cartService.getCartTotal(cartId));
     }
 
     @PostMapping("/{cartId}/items")
