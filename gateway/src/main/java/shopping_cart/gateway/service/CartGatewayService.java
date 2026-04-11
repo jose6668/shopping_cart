@@ -3,11 +3,14 @@ package shopping_cart.gateway.service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import shopping_cart.gateway.dto.AddCartItemRequestDTO;
 import shopping_cart.gateway.dto.CreateCartRequestDTO;
 
 @Service
@@ -21,27 +24,37 @@ public class CartGatewayService {
             .uri("/api/v1/carts")
             .contentType(MediaType.APPLICATION_JSON)
             .body(request)
-            .exchange((clientRequest, clientResponse) -> {
-                try {
-                    String responseBody = new String(
-                        clientResponse.getBody().readAllBytes(),
-                        StandardCharsets.UTF_8
-                    );
+            .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
+    }
 
-                    HttpHeaders headers = new HttpHeaders();
-                    MediaType contentType = clientResponse.getHeaders().getContentType();
-                    if (contentType != null) {
-                        headers.setContentType(contentType);
-                    } else {
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                    }
+    public ResponseEntity<String> addItemToCart(Long cartId, AddCartItemRequestDTO request) {
+        return backendRestClient.post()
+            .uri("/api/v1/carts/{cartId}/items", cartId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
+    }
 
-                    return ResponseEntity.status(clientResponse.getStatusCode())
-                        .headers(headers)
-                        .body(responseBody);
-                } catch (IOException exception) {
-                    throw new IllegalStateException("Could not read backend response", exception);
-                }
-            });
+    private ResponseEntity<String> mapBackendResponse(HttpRequest clientRequest, ClientHttpResponse clientResponse) {
+        try {
+            String responseBody = new String(
+                clientResponse.getBody().readAllBytes(),
+                StandardCharsets.UTF_8
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            MediaType contentType = clientResponse.getHeaders().getContentType();
+            if (contentType != null) {
+                headers.setContentType(contentType);
+            } else {
+                headers.setContentType(MediaType.APPLICATION_JSON);
+            }
+
+            return ResponseEntity.status(clientResponse.getStatusCode())
+                .headers(headers)
+                .body(responseBody);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not read backend response", exception);
+        }
     }
 }
