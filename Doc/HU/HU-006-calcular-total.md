@@ -6,17 +6,18 @@
 
 ## Criterios de Aceptacion
 
-- [ ] El sistema calcula el total del carrito a partir de los subtotales de cada item
-- [ ] El total se actualiza al agregar, modificar o eliminar productos
-- [ ] La respuesta incluye el numero total de items y el monto total
-- [ ] El calculo se realiza de forma consistente con los datos persistidos
-- [ ] El resultado puede ser consultado desde el backend y mostrado en el frontend
+- [x] El sistema calcula el total del carrito a partir de los subtotales de cada item
+- [x] El total se actualiza al agregar, modificar o eliminar productos
+- [x] La respuesta incluye el numero total de items y el monto total
+- [x] El calculo se realiza de forma consistente con los datos persistidos
+- [x] El resultado puede ser consultado desde el backend y mostrado en el frontend
 
 ## Detalles Tecnicos
 
 - **Microservicio:** shopping-cart
-- **Componente:** backend
-- **Endpoint:** `GET /api/v1/carts/{cartId}/total`
+- **Componente:** backend y gateway
+- **Endpoint backend:** `GET /api/v1/carts/{cartId}/total`
+- **Endpoint gateway:** `GET /api/v1/carts/{cartId}/total`
 - **Base de datos:** relacional
 - **Story Points:** 3
 

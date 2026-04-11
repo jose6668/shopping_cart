@@ -4,7 +4,7 @@
 - HU: `HU-006`
 - Nombre: Calcular total del carrito
 - Microservicio: `shopping-cart`
-- Estado: Parcialmente cubierta en backend y gateway mediante consulta del carrito
+- Estado: Implementada en backend y gateway
 - Rama de trabajo sugerida: `HU-006-back-dev`
 
 ## 2. Objetivo de la HU
@@ -84,36 +84,31 @@ Resultado esperado:
 - si se elimina un item, el total disminuye
 - si el carrito no tiene items, el total debe ser `0`
 
-## 8. Alcance funcional observado
-Actualmente el repositorio ya resuelve gran parte de esta HU mediante la consulta general del carrito.
+## 8. Alcance funcional implementado
+Se implemento un endpoint especializado para consultar el total actualizado del carrito sin depender de la respuesta completa del detalle.
 
-La implementacion observada permite:
-- consultar un carrito por `cartId`
-- obtener la lista completa de items
-- devolver el campo `total` dentro de `CartDetailResponseDTO`
-- recalcular implicitamente el total cada vez que se consulta el carrito
-- exponer la misma respuesta a traves del `gateway`
+La implementacion actual permite:
+- consultar el total por `cartId`
+- calcular `totalAmount` a partir de los subtotales persistidos
+- calcular `totalItems` como suma total de cantidades del carrito
+- mantener el detalle completo del carrito en `GET /api/v1/carts/{cartId}`
+- exponer la nueva consulta tambien a traves del `gateway`
 
-No se observa aun en el codigo actual:
-- un endpoint dedicado `GET /api/v1/carts/{cartId}/total`
-- un DTO especializado solo para total e items
+Con esto, la HU queda cubierta tanto funcional como tecnicamente segun el endpoint definido en la historia.
 
-Por eso, la HU queda funcionalmente cubierta en el flujo de consulta del carrito, aunque no exactamente con el contrato puntual descrito en la HU original.
-
-## 9. Endpoint observado y endpoint propuesto
-### Consumo actual por gateway
+## 9. Endpoint implementado
+### Consumo oficial por gateway
 - Metodo: `GET`
-- URL observada: `http://localhost:8080/api/v1/carts/{cartId}`
+- URL implementada: `http://localhost:8080/api/v1/carts/{cartId}/total`
 
-### Endpoint actual del microservicio
+### Endpoint interno del microservicio
 - Metodo: `GET`
-- URL observada: `http://localhost:8081/api/v1/carts/{cartId}`
+- URL implementada: `http://localhost:8081/api/v1/carts/{cartId}/total`
 
-### Endpoint propuesto por la HU
-- Metodo: `GET`
-- URL propuesta: `http://localhost:8080/api/v1/carts/{cartId}/total`
+Adicionalmente, se mantiene disponible:
+- `GET /api/v1/carts/{cartId}`
 
-La implementacion actual entrega el total dentro del detalle completo del carrito, por lo que la HU ya tiene soporte funcional aunque todavia no mediante una ruta exclusiva para total.
+Esa ruta sigue retornando el detalle completo del carrito con el campo `total`, mientras que la nueva ruta entrega un resumen especifico para la HU.
 
 ## 10. Payload propuesto
 Esta HU no requiere body de entrada.
@@ -124,25 +119,16 @@ La solicitud esperada se realiza unicamente mediante parametro de ruta:
 GET /api/v1/carts/5/total
 ```
 
-En la implementacion actual observada, la consulta funcional equivalente es:
-
-```http
-GET /api/v1/carts/5
-```
-
-## 11. Validaciones de negocio observadas
+## 11. Validaciones de negocio implementadas
 El backend ya valida como minimo:
 
 1. `cartId` es obligatorio y debe ser un valor numerico positivo
 2. el carrito debe existir en base de datos
-3. el total se calcula a partir de los `subtotal` de los items persistidos
-4. el total se recalcula al momento de consultar el carrito
-5. si el carrito no existe, el sistema responde con error controlado
-
-Validaciones deseables para un endpoint especializado de total:
-6. la respuesta debe incluir tambien el numero total de items
-7. el total debe devolverse con precision monetaria consistente
-8. el contrato debe ser estable para consumo desde frontend
+3. `totalAmount` se calcula a partir de los `subtotal` de los items persistidos
+4. `totalItems` se calcula como suma total de `quantity` de los items del carrito
+5. el total se recalcula al momento de consultar el endpoint
+6. si el carrito esta vacio, la respuesta debe retornar `0` en total e items
+7. si el carrito no existe, el sistema responde con error controlado
 
 ## 12. Modelo de datos aplicado
 La HU no requiere una nueva entidad principal de persistencia.
@@ -165,24 +151,29 @@ Regla aplicada:
 - el total general del carrito se obtiene sumando todos los subtotales asociados al `cartId`
 - el resultado final depende del estado persistido de `cart_items`
 
-## 13. Trazabilidad tecnica observada
-Tomando como base la estructura actual del backend, la logica relacionada con esta HU ya se encuentra distribuida asi:
+## 13. Trazabilidad tecnica implementada
+Tomando como base la estructura actual del backend, la logica relacionada con esta HU quedo distribuida asi:
 
 - `controller/CartController.java`
-  - expone `GET /api/v1/carts/{cartId}`
+  - expone `GET /api/v1/carts/{cartId}/total`
 - `service/ICartService.java`
-  - define el contrato `getCartById(Long cartId)`
+  - define el contrato `getCartTotal(Long cartId)`
 - `service/CartServiceImpl.java`
   - consulta el carrito
   - obtiene los items asociados
   - suma `subtotal` de cada item
-  - construye `CartDetailResponseDTO` con el campo `total`
-- `dto/CartDetailResponseDTO.java`
-  - transporta el total calculado del carrito
+  - suma `quantity` de cada item
+  - construye `CartTotalResponseDTO`
+- `dto/CartTotalResponseDTO.java`
+  - transporta `cartId`, `totalItems` y `totalAmount`
 - `gateway/controller/CartGatewayController.java`
-  - expone la consulta del carrito hacia el cliente
+  - expone `GET /api/v1/carts/{cartId}/total` hacia el cliente
 - `gateway/service/CartGatewayService.java`
   - reenvia la consulta desde gateway hacia backend
+- `backend/src/test/.../CartServiceImplTest.java`
+  - valida total monetario y total de items
+- `gateway/src/test/.../CartGatewayControllerTest.java`
+  - valida la exposicion del endpoint en gateway
 
 ## 14. Configuracion de base de datos propuesta
 El backend ya se encuentra configurado para PostgreSQL y ya dispone de las tablas necesarias para soportar esta HU.
@@ -201,60 +192,38 @@ La logica depende de:
 - `carts`
 - `cart_items`
 
-## 15. Contrato de respuesta observado y contrato propuesto
-Respuesta actualmente observada dentro de la consulta del carrito:
-
-```json
-{
-  "id": 5,
-  "userId": 12,
-  "status": "ACTIVE",
-  "createdAt": "2026-04-11T13:10:00",
-  "updatedAt": "2026-04-11T13:20:00",
-  "items": [
-    {
-      "id": 1,
-      "productId": 101,
-      "name": "Producto A",
-      "quantity": 2,
-      "price": 15000.00,
-      "subtotal": 30000.00
-    }
-  ],
-  "total": 30000.00
-}
-```
-
-Contrato especializado propuesto por la HU:
+## 15. Contrato de respuesta implementado
+Respuesta implementada:
 
 ```json
 {
   "cartId": 5,
-  "totalItems": 1,
-  "totalAmount": 30000.00
+  "totalItems": 3,
+  "totalAmount": 380000.00
 }
 ```
 
-La observacion principal es que el total ya existe en la respuesta del carrito, pero todavia no bajo un DTO exclusivo orientado solo al resumen monetario.
+La respuesta permite al frontend conocer:
+- el carrito consultado
+- la suma total de cantidades del carrito
+- el monto total actualizado del carrito
 
-## 16. Implementacion tecnica observada
+## 16. Implementacion tecnica realizada
 - `CartController`
-  - endpoint implementado `GET /api/v1/carts/{cartId}`
+  - endpoint implementado `GET /api/v1/carts/{cartId}/total`
 - `ICartService`
-  - contrato implementado para consultar detalle del carrito
+  - contrato implementado para consultar el total del carrito
 - `CartServiceImpl`
   - obtiene items del carrito
   - suma subtotales usando `BigDecimal`
-  - devuelve el total dentro de `CartDetailResponseDTO`
-- `CartDetailResponseDTO`
-  - representa el detalle completo del carrito con el campo `total`
+  - suma cantidades para construir `totalItems`
+  - reutiliza la misma base de calculo usada en el detalle del carrito
+- `CartTotalResponseDTO`
+  - representa la respuesta especializada del HU
 - `gateway`
-  - expone y reenvia la consulta del carrito
-
-Si se desea cerrar completamente la HU segun el contrato original, haria falta:
-- crear un DTO especializado para total
-- implementar `GET /api/v1/carts/{cartId}/total` en backend
-- exponer la misma ruta en gateway
+  - expone y reenvia la nueva consulta de total
+- `pruebas`
+  - se agregaron pruebas unitarias en backend y gateway
 
 ## 17. Criterios de aceptacion propuestos
 1. El sistema debe calcular el total del carrito a partir de los subtotales de cada item.
@@ -270,22 +239,22 @@ Si se desea cerrar completamente la HU segun el contrato original, haria falta:
 - `backend/src/main/java/shopping_cart/backend/controller/CartController.java`
 - `backend/src/main/java/shopping_cart/backend/service/ICartService.java`
 - `backend/src/main/java/shopping_cart/backend/service/CartServiceImpl.java`
-- `backend/src/main/java/shopping_cart/backend/dto/CartDetailResponseDTO.java`
-- `backend/src/main/java/shopping_cart/backend/dto/CartDetailItemResponseDTO.java`
+- `backend/src/main/java/shopping_cart/backend/dto/CartTotalResponseDTO.java`
+- `backend/src/test/java/shopping_cart/backend/service/CartServiceImplTest.java`
 - `gateway/src/main/java/shopping_cart/gateway/controller/CartGatewayController.java`
 - `gateway/src/main/java/shopping_cart/gateway/service/CartGatewayService.java`
+- `gateway/src/test/java/shopping_cart/gateway/controller/CartGatewayControllerTest.java`
 - `Doc/Changes/HU-006-calcular-total.md`
 
 ## 19. Riesgos o validaciones previas
-- Confirmar si la HU debe darse por satisfecha con el campo `total` dentro de `GET /api/v1/carts/{cartId}` o si es obligatorio crear `GET /api/v1/carts/{cartId}/total`.
-- Confirmar si `numero total de items` significa cantidad de lineas del carrito o suma total de unidades.
-- Validar si el frontend necesita solo `totalAmount` o tambien un desglose adicional del resumen.
-- Confirmar el formato monetario final esperado para la respuesta al cliente.
+- Confirmar con frontend si `totalItems` debe mantenerse como suma total de unidades o si en algun punto se requerira tambien el numero de lineas.
+- Validar si el frontend necesitara en el futuro impuestos, descuentos o costo de envio dentro del resumen monetario.
+- Confirmar si el endpoint de total debe restringirse solo a carritos en estado `ACTIVE` o si tambien se permitira para historicos.
 
 ## 20. Estado de este documento
-Este documento deja registrada la situacion actual de la `HU-006 - Calcular total del carrito`, alineada con:
+Este documento deja registrada la implementacion funcional y tecnica de la `HU-006 - Calcular total del carrito`, alineada con:
 - la HU original del proyecto
 - el formato de cambios ya usado en `HU-001`, `HU-002`, `HU-003`, `HU-004` y `HU-005`
 - la estructura actual del backend y del gateway
-- la logica ya implementada en la consulta detallada del carrito
-- la necesidad de decidir si se mantiene el enfoque actual o si se agrega un endpoint especializado para el total
+- la logica ya implementada para consultar un resumen especializado de total
+- la necesidad de mostrar el monto actualizado del carrito en backend, gateway y frontend
