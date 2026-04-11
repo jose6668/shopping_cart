@@ -18,6 +18,7 @@ services:
       retries: 5
 
   backend:
+    image: shopping-cart-backend:latest
     build:
       context: ./backend
     container_name: shopping-cart-backend
@@ -33,18 +34,30 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   gateway:
+    image: shopping-cart-gateway:latest
     build:
       context: ./gateway
     container_name: shopping-cart-gateway
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8080
       BACKEND_BASE_URL: http://backend:8081
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   postgres_data:

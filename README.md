@@ -14,6 +14,7 @@ Actualmente se encuentran implementadas:
 - `HU-003 - Consultar carrito`
 - `HU-004 - Actualizar cantidad de producto en el carrito`
 - `HU-005 - Eliminar producto del carrito`
+- `HU-006 - Calcular total del carrito`
 
 Flujo disponible:
 - el cliente consume el `gateway`
@@ -23,6 +24,7 @@ Flujo disponible:
 - el `backend` permite actualizar la cantidad de un item existente del carrito
 - el `backend` permite eliminar un item existente del carrito
 - el `backend` permite consultar el carrito con sus items y el total acumulado
+- el `backend` permite consultar un resumen especializado del total del carrito
 - si el producto ya existe en el carrito, actualiza la cantidad
 - PostgreSQL persiste la informacion del carrito y sus items
 
@@ -39,6 +41,7 @@ Flujo disponible:
 - `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `GET /api/v1/carts/{cartId}`
+- `GET /api/v1/carts/{cartId}/total`
 
 Ejemplo de request:
 
@@ -53,6 +56,17 @@ Ejemplo de request:
 ```bash
 docker compose up --build
 ```
+
+Para levantarlo en segundo plano y reconstruir imagenes cuando haya cambios:
+
+```bash
+docker compose up -d --build
+```
+
+El archivo `docker-compose.yml` actual:
+- conserva la base de datos mediante el volumen `postgres_data`
+- asigna nombre fijo a las imagenes de `backend` y `gateway`
+- agrega `healthcheck` para coordinar mejor el arranque de servicios
 
 Si deseas reiniciar completamente la base de datos e inicializar de nuevo el script SQL:
 
@@ -93,6 +107,12 @@ Y consultar el detalle del carrito:
 curl -X GET http://localhost:8080/api/v1/carts/1
 ```
 
+Tambien puedes consultar el resumen especializado del total del carrito:
+
+```bash
+curl -X GET http://localhost:8080/api/v1/carts/1/total
+```
+
 Tambien puedes actualizar la cantidad de un item existente:
 
 ```bash
@@ -111,4 +131,10 @@ Despues puedes volver a consultar el carrito para verificar que el item ya no ap
 
 ```bash
 curl -X GET http://localhost:8080/api/v1/carts/1
+```
+
+O consultar directamente el nuevo resumen de total:
+
+```bash
+curl -X GET http://localhost:8080/api/v1/carts/1/total
 ```
