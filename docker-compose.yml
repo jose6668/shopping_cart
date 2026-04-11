@@ -1,4 +1,22 @@
 services:
+  frontend:
+    image: shopping-cart-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        VITE_GATEWAY_URL: http://localhost:8080
+    container_name: shopping-cart-frontend
+    depends_on:
+      gateway:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   postgres:
     image: postgres:16
     container_name: shopping-cart-postgres

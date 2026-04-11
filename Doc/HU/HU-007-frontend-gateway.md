@@ -6,17 +6,20 @@
 
 ## Criterios de Aceptacion
 
-- [ ] El frontend permite visualizar el contenido del carrito
-- [ ] El frontend permite agregar, actualizar y eliminar productos
-- [ ] Las solicitudes del frontend pasan por el API Gateway
-- [ ] El API Gateway redirige correctamente las peticiones al microservicio `shopping_cart`
-- [ ] La informacion mostrada en la interfaz coincide con la respuesta del backend
+- [x] El frontend permite visualizar el contenido del carrito
+- [x] El frontend permite agregar, actualizar y eliminar productos
+- [x] Las solicitudes del frontend pasan por el API Gateway
+- [x] El API Gateway redirige correctamente las peticiones al microservicio `shopping_cart`
+- [x] La informacion mostrada en la interfaz coincide con la respuesta del backend
 
 ## Detalles Tecnicos
 
 - **Microservicio:** shopping-cart
+- **Framework frontend:** Vue 3 + Vite
 - **Componentes:** frontend, gateway, backend
-- **Endpoints:** rutas expuestas a traves del API Gateway
+- **Endpoints:** rutas expuestas a traves del API Gateway en `http://localhost:8080`
+- **Puerto frontend:** `http://localhost:5173`
+- **Despliegue:** compatible con `docker compose up --build`
 - **Base de datos:** relacional
 - **Story Points:** 8
 
