@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import shopping_cart.gateway.dto.AddCartItemRequestDTO;
 import shopping_cart.gateway.dto.CreateCartRequestDTO;
+import shopping_cart.gateway.dto.UpdateCartItemQuantityRequestDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,14 @@ public class CartGatewayService {
     public ResponseEntity<String> addItemToCart(Long cartId, AddCartItemRequestDTO request) {
         return backendRestClient.post()
             .uri("/api/v1/carts/{cartId}/items", cartId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));
+    }
+
+    public ResponseEntity<String> updateCartItemQuantity(Long cartId, Long itemId, UpdateCartItemQuantityRequestDTO request) {
+        return backendRestClient.put()
+            .uri("/api/v1/carts/{cartId}/items/{itemId}", cartId, itemId)
             .contentType(MediaType.APPLICATION_JSON)
             .body(request)
             .exchange((clientRequest, clientResponse) -> mapBackendResponse(clientRequest, clientResponse));

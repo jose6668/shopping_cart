@@ -77,6 +77,11 @@ public class CartItem {
         recalculateSubtotal();
     }
 
+    public void updateQuantity(int newQuantity) {
+        quantity = newQuantity;
+        recalculateSubtotal();
+    }
+
     public void updateProductSnapshot(String productName, BigDecimal productPrice) {
         name = productName;
         price = normalizeAmount(productPrice);
