@@ -4,7 +4,7 @@
 - HU: `HU-005`
 - Nombre: Eliminar producto del carrito
 - Microservicio: `shopping-cart`
-- Estado: Propuesta funcional para implementacion en backend y gateway
+- Estado: Implementada en backend y gateway
 - Rama de trabajo sugerida: `HU-005-back-dev`
 
 ## 2. Objetivo de la HU
@@ -17,10 +17,10 @@ La HU base indica que el sistema debe:
 - responder de forma controlada si el producto no existe dentro del carrito
 - reflejar la eliminacion en base de datos
 
-Esta implementacion debe apoyarse sobre la base ya construida en `HU-002`, `HU-003` y `HU-004`, donde el sistema ya puede agregar productos, consultar el carrito y actualizar cantidades, pero aun no dispone de una operacion explicita para retirar items.
+Esta implementacion se apoya sobre la base ya construida en `HU-002`, `HU-003` y `HU-004`, donde el sistema ya puede agregar productos, consultar el carrito y actualizar cantidades, y ahora incorpora tambien una operacion explicita para retirar items.
 
 ## 3. Justificacion funcional
-Actualmente el backend ya puede crear carritos, agregar items, consultar su contenido y actualizar cantidades, pero aun no dispone de un metodo especializado para eliminar un item existente.
+Actualmente el backend ya puede crear carritos, agregar items, consultar su contenido, actualizar cantidades y eliminar un item existente mediante un endpoint especializado.
 
 Esto genera un vacio funcional porque:
 - el usuario necesita retirar productos que ya no desea comprar
@@ -95,8 +95,8 @@ Resultado esperado:
 - el total del carrito se mantiene consistente con los items restantes
 - el backend deja preparado el flujo para futuras HU de checkout o confirmacion de compra
 
-## 8. Alcance funcional propuesto
-Se propone crear un endpoint especializado para eliminar un item existente dentro de un carrito.
+## 8. Alcance funcional implementado
+Se implemento un endpoint especializado para eliminar un item existente dentro de un carrito.
 
 El endpoint debe permitir:
 - identificar un carrito por `cartId`
@@ -113,14 +113,14 @@ No hace parte de esta HU:
 - vaciar completamente el carrito en una sola operacion
 - cerrar o confirmar la compra
 
-## 9. Endpoint propuesto
+## 9. Endpoint implementado
 ### Consumo oficial por gateway
 - Metodo: `DELETE`
-- URL propuesta: `http://localhost:8080/api/v1/carts/{cartId}/items/{itemId}`
+- URL implementada: `http://localhost:8080/api/v1/carts/{cartId}/items/{itemId}`
 
 ### Endpoint interno del microservicio
 - Metodo: `DELETE`
-- URL propuesta: `http://localhost:8081/api/v1/carts/{cartId}/items/{itemId}`
+- URL implementada: `http://localhost:8081/api/v1/carts/{cartId}/items/{itemId}`
 
 La ruta propuesta se alinea con la HU original y con la convencion REST ya usada en las operaciones de adicion y actualizacion de items.
 
@@ -133,8 +133,8 @@ La solicitud esperada se realiza unicamente mediante parametros de ruta:
 DELETE /api/v1/carts/5/items/2
 ```
 
-## 11. Validaciones de negocio propuestas
-El backend debe validar como minimo:
+## 11. Validaciones de negocio implementadas
+El backend valida como minimo:
 
 1. `cartId` es obligatorio y debe ser un valor numerico positivo
 2. `itemId` es obligatorio y debe ser un valor numerico positivo
@@ -146,8 +146,8 @@ El backend debe validar como minimo:
 8. el total del carrito debe recalcularse a partir de los subtotales de los items restantes
 9. si el item no existe en el carrito, el sistema debe responder con un error controlado
 
-## 12. Modelo de datos propuesto
-Para esta HU no se requiere crear una nueva entidad, sino extender el comportamiento sobre la entidad `CartItem` ya existente.
+## 12. Modelo de datos aplicado
+Para esta HU no se requirio crear una nueva entidad de persistencia principal, sino extender el comportamiento sobre la entidad `CartItem` ya existente y agregar un DTO de respuesta para confirmar la eliminacion.
 
 Campos relevantes del item:
 - `id`
@@ -160,36 +160,38 @@ Campos relevantes del item:
 - `createdAt`
 - `updatedAt`
 
-Regla sugerida:
+Regla aplicada:
 - al eliminar el item, el registro debe dejar de existir en `cart_items`
 - el carrito debe conservar sus demas items sin alteraciones
 - el total del carrito debe construirse despues con base en los items que permanezcan asociados
 
 Esto deja preparado el modelo para futuras HU como limpieza completa del carrito o confirmacion de compra.
 
-## 13. Trazabilidad tecnica propuesta
-Tomando como base la estructura actual del backend, la implementacion deberia organizarse asi:
+## 13. Trazabilidad tecnica implementada
+Tomando como base la estructura actual del backend, la implementacion quedo organizada asi:
 
 - `controller/CartController.java`
-  - exponer `DELETE /api/v1/carts/{cartId}/items/{itemId}`
+  - expone `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `service/ICartService.java`
-  - definir el contrato para eliminar un item del carrito
+  - define el contrato para eliminar un item del carrito
 - `service/CartServiceImpl.java`
   - validar carrito e item
   - validar pertenencia del item al carrito
   - eliminar el registro
+  - actualizar `updatedAt` del carrito mediante `touch()`
 - `repository/CartRepository.java`
-  - apoyar validacion de existencia del carrito
+  - apoya validacion de existencia del carrito
 - `repository/CartItemRepository.java`
   - consultar item por `id`
-  - validar asociacion con el carrito
   - eliminar item persistido
+- `dto/DeleteCartItemResponseDTO.java`
+  - retorna `message`, `cartId` e `itemId`
 - `exception/GlobalExceptionHandler.java`
-  - centralizar respuestas de error
+  - centraliza respuestas de error
 - `gateway/controller/CartGatewayController.java`
-  - exponer la operacion hacia el cliente
+  - expone la operacion hacia el cliente
 - `gateway/service/CartGatewayService.java`
-  - reenviar la solicitud `DELETE` hacia backend
+  - reenvia la solicitud `DELETE` hacia backend
 
 ## 14. Configuracion de base de datos propuesta
 El backend ya se encuentra configurado para PostgreSQL y ya dispone de las tablas necesarias para soportar esta HU.
@@ -207,10 +209,10 @@ Para esta HU no seria necesario crear nuevas tablas si la eliminacion se realiza
 - `carts`
 - `cart_items`
 
-La logica principal recaeria en validaciones, eliminacion del item y coherencia de las consultas posteriores.
+La logica principal recae en validaciones, eliminacion del item y coherencia de las consultas posteriores.
 
-## 15. Contrato de respuesta propuesto
-Respuesta sugerida:
+## 15. Contrato de respuesta implementado
+Respuesta implementada:
 
 ```json
 {
@@ -220,26 +222,29 @@ Respuesta sugerida:
 }
 ```
 
-Alternativamente, la implementacion tambien podria responder con `204 No Content` si se desea una operacion mas estrictamente REST.
+La implementacion actual responde con un JSON simple de confirmacion:
+- confirma que la eliminacion fue realizada
+- identifica el `cartId`
+- identifica el `itemId`
 
-En la implementacion minima propuesta:
-- la respuesta debe confirmar que la eliminacion fue realizada
-- la consulta posterior del carrito debe reflejar el total general actualizado
-- el item eliminado no debe volver a aparecer en la lista de productos
+La consulta posterior del carrito refleja el total general actualizado y el item eliminado no vuelve a aparecer en la lista de productos.
 
-## 16. Implementacion tecnica sugerida
+## 16. Implementacion tecnica realizada
 - `CartController`
-  - endpoint nuevo `DELETE /api/v1/carts/{cartId}/items/{itemId}`
+  - endpoint implementado `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `ICartService`
-  - metodo nuevo para eliminar item de carrito
+  - metodo implementado para eliminar item de carrito
 - `CartServiceImpl`
   - valida `cartId`
   - valida `itemId`
   - busca item existente
   - comprueba pertenencia al carrito
   - elimina el item
+  - actualiza la marca de tiempo del carrito
 - `CartItemRepository`
-  - reutiliza la consulta por `id` del item y la operacion de borrado
+  - reutiliza la consulta por `id` del item y la operacion `delete`
+- `DeleteCartItemResponseDTO`
+  - DTO implementado para representar la respuesta de eliminacion
 - `GlobalExceptionHandler`
   - devuelve errores controlados
 - `gateway`
@@ -256,17 +261,15 @@ En la implementacion minima propuesta:
 8. La eliminacion debe quedar reflejada en la base de datos.
 9. La operacion debe quedar expuesta tambien a traves del gateway.
 
-## 18. Archivos candidatos a modificacion
+## 18. Archivos modificados
 - `backend/src/main/java/shopping_cart/backend/controller/CartController.java`
 - `backend/src/main/java/shopping_cart/backend/service/ICartService.java`
 - `backend/src/main/java/shopping_cart/backend/service/CartServiceImpl.java`
-- `backend/src/main/java/shopping_cart/backend/repository/CartRepository.java`
-- `backend/src/main/java/shopping_cart/backend/repository/CartItemRepository.java`
-- `backend/src/main/java/shopping_cart/backend/exception/GlobalExceptionHandler.java`
+- `backend/src/main/java/shopping_cart/backend/dto/DeleteCartItemResponseDTO.java`
 - `gateway/src/main/java/shopping_cart/gateway/controller/CartGatewayController.java`
 - `gateway/src/main/java/shopping_cart/gateway/service/CartGatewayService.java`
-- `backend/src/test/java/...`
-- `gateway/src/test/java/...`
+- `backend/src/test/java/shopping_cart/backend/service/CartServiceImplTest.java`
+- `Doc/Changes/HU-005-eliminar-producto.md`
 
 ## 19. Riesgos o validaciones previas
 - Confirmar si al eliminar el ultimo item el carrito debe permanecer en estado `ACTIVE` y vacio, o si debe cambiar de estado.
@@ -276,11 +279,15 @@ En la implementacion minima propuesta:
 - Validar si el gateway mantendra el contrato como texto crudo o si luego evolucionara a DTOs tipados.
 
 ## 20. Estado de este documento
-Este documento deja registrada la propuesta funcional y tecnica de la `HU-005 - Eliminar producto del carrito`, alineada con:
+Este documento deja registrada la implementacion funcional y tecnica de la `HU-005 - Eliminar producto del carrito`, alineada con:
 - la HU original del proyecto
 - el formato de cambios ya usado en `HU-001`, `HU-002`, `HU-003` y `HU-004`
 - la estructura actual del backend y del gateway
 - el modelo de datos ya existente en `carts` y `cart_items`
 - la necesidad de permitir retirar productos del carrito antes de continuar con el flujo de compra
 
-Actualmente el repositorio no evidencia aun una implementacion explicita del endpoint `DELETE` para esta HU, por lo que este documento queda como base de trabajo para su desarrollo.
+Adicionalmente, la implementacion fue verificada con pruebas del modulo `backend`, del modulo `gateway` y con pruebas manuales en Postman sobre el flujo de:
+- crear carrito
+- agregar item
+- eliminar item
+- consultar carrito despues de la eliminacion
