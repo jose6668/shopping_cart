@@ -1,138 +1,138 @@
-# Estructura General del Proyecto
+﻿# Estructura General del Proyecto
 
-Este documento centraliza la documentacion de la estructura propuesta para el proyecto `shopping_cart`. A diferencia del ejemplo de arquitectura monorepo mostrado en clase, en este caso el proyecto estara compuesto por un solo microservicio principal, un `API Gateway`, su frontend, la base de datos y la configuracion necesaria para Docker. Para el desarrollo del backend se utilizara el framework `Spring Boot`.
+Este documento centraliza la documentacion de la estructura del proyecto `shopping_cart`. A diferencia del ejemplo de arquitectura monorepo mostrado en clase, en este caso el proyecto queda compuesto por un microservicio principal, un `API Gateway`, su frontend en `Vue`, la base de datos y la configuracion necesaria para Docker. Para el desarrollo del backend se utiliza `Spring Boot`.
 
 ## 1. Proposito de la Estructura
 
-La finalidad de esta estructura es organizar claramente cada parte del sistema para que el desarrollo sea mas facil de entender, mantener y escalar. Aunque se trabajara con un unico microservicio, se conservara una organizacion tipo monorepo para separar responsabilidades y facilitar el trabajo por modulos.
+La finalidad de esta estructura es organizar claramente cada parte del sistema para que el desarrollo sea mas facil de entender, mantener y escalar. Aunque se trabaja con un unico microservicio, se conserva una organizacion tipo monorepo para separar responsabilidades y facilitar el trabajo por modulos.
 
-## 2. Estructura Propuesta del Proyecto
+## 2. Estructura Actual del Proyecto
 
 ```text
 shopping_cart/
-├── README.md
-├── docker-compose.yml
-├── Doc/
-│   ├── introduccion.md
-│   ├── estructura-proyecto.md
-│   └── diagrama-contexto.md
-├── gateway/                         (API Gateway - Spring Boot)
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/
-│   │       └── resources/
-│   │           └── application.yml
-│   ├── pom.xml
-│   └── Dockerfile
-├── backend/                         (Shopping Cart Microservice - Spring Boot)
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/
-│   │       └── resources/
-│   │           └── application.yml
-│   ├── pom.xml
-│   └── Dockerfile
-├── frontend/                        (User Interface)
-│   ├── src/
-│   ├── package.json
-│   └── Dockerfile
-└── database/                        (Database configuration)
-    ├── init/
-    │   └── init.sql
-    └── README.md
+|-- README.md
+|-- docker-compose.yml
+|-- Doc/
+|   |-- Changes/
+|   |-- Diagramas/
+|   `-- HU/
+|-- gateway/                         (API Gateway - Spring Boot)
+|   |-- src/
+|   |-- pom.xml
+|   `-- Dockerfile
+|-- backend/                         (Shopping Cart Microservice - Spring Boot)
+|   |-- src/
+|   |-- pom.xml
+|   `-- Dockerfile
+|-- frontend/                        (Vue 3 + Vite User Interface)
+|   |-- src/
+|   |-- package.json
+|   |-- vite.config.js
+|   |-- .env
+|   `-- Dockerfile
+`-- database/                        (Database configuration)
+    `-- init.sql
 ```
 
 ## 3. Descripcion de Cada Parte
 
 ### `README.md`
 
-Archivo principal del proyecto. Aqui se incluira una vista general del sistema, instrucciones de ejecucion, tecnologias utilizadas y pasos de instalacion.
+Archivo principal del proyecto. Incluye una vista general del sistema, instrucciones de ejecucion, tecnologias utilizadas y pasos de instalacion.
 
 ### `docker-compose.yml`
 
-Permitira levantar todos los servicios necesarios del proyecto en conjunto, por ejemplo:
+Permite levantar todos los servicios necesarios del proyecto en conjunto:
 
+- Frontend
 - API Gateway
 - Backend
-- Frontend
 - Base de datos
 
-Esto facilitara las pruebas locales y el despliegue del entorno completo.
+Esto facilita las pruebas locales y el despliegue del entorno completo.
 
 ### `gateway/`
 
-Esta carpeta contendra el `API Gateway` del proyecto, tambien desarrollado con `Spring Boot`. Su funcion sera actuar como punto de entrada principal para las solicitudes del frontend, centralizando el acceso al microservicio `shopping_cart`.
+Esta carpeta contiene el `API Gateway` del proyecto, desarrollado con `Spring Boot`. Su funcion es actuar como punto de entrada principal para las solicitudes del frontend, centralizando el acceso al microservicio `shopping_cart`.
 
-Entre sus responsabilidades estaran:
+Entre sus responsabilidades estan:
 
-- Recibir las solicitudes entrantes del frontend
-- Redirigir las peticiones hacia el microservicio correspondiente
-- Facilitar una arquitectura mas ordenada y escalable
-- Servir como punto central de acceso para futuras ampliaciones del sistema
+- recibir las solicitudes entrantes del frontend
+- redirigir las peticiones hacia el microservicio correspondiente
+- facilitar una arquitectura mas ordenada y escalable
+- servir como punto central de acceso para futuras ampliaciones del sistema
 
-Dentro de esta carpeta tambien se manejara una estructura tipica de Spring Boot:
+Dentro de esta carpeta se maneja una estructura tipica de Spring Boot:
 
-- Codigo fuente en `src/main/java`
-- Configuracion en `src/main/resources/application.yml`
-- Dependencias y construccion con `pom.xml`
-- Contenerizacion mediante `Dockerfile`
+- codigo fuente en `src/main/java`
+- configuracion en `src/main/resources/application.yml`
+- dependencias y construccion con `pom.xml`
+- contenerizacion mediante `Dockerfile`
 
 ### `Doc/`
 
-Carpeta destinada a reunir la documentacion del proyecto. Aqui se almacenaran los archivos explicativos de cada fase del desarrollo, con el objetivo de que cualquier persona pueda entender como se construyo el microservicio paso a paso.
+Carpeta destinada a reunir la documentacion del proyecto. Aqui se almacenan los archivos explicativos de cada fase del desarrollo para que cualquier persona pueda entender como se construyo el proyecto paso a paso.
 
 ### `backend/`
 
-Esta carpeta contendra el microservicio principal de `shopping_cart`, desarrollado con `Spring Boot`. Aqui se construira toda la logica relacionada con el carrito de compras, incluyendo:
+Esta carpeta contiene el microservicio principal de `shopping_cart`, desarrollado con `Spring Boot`. Aqui se construye toda la logica relacionada con el carrito de compras, incluyendo:
 
-- Gestion de productos agregados al carrito
-- Actualizacion de cantidades
-- Eliminacion de productos
-- Consulta del contenido del carrito
-- Calculo de totales
-- Conexion con la base de datos
-- Exposicion de endpoints para el frontend o para otros servicios
+- gestion de productos agregados al carrito
+- actualizacion de cantidades
+- eliminacion de productos
+- consulta del contenido del carrito
+- calculo de totales
+- conexion con la base de datos
+- exposicion de endpoints para el frontend o para otros servicios
 
-Dentro de esta carpeta tambien se manejara la estructura tipica de un proyecto Spring Boot, como:
+Dentro de esta carpeta tambien se maneja la estructura tipica de un proyecto Spring Boot:
 
-- Codigo fuente en `src/main/java`
-- Configuracion en `src/main/resources/application.yml`
-- Dependencias y construccion con `pom.xml`
-- Contenerizacion mediante `Dockerfile`
+- codigo fuente en `src/main/java`
+- configuracion en `src/main/resources/application.yml`
+- dependencias y construccion con `pom.xml`
+- contenerizacion mediante `Dockerfile`
 
-Como este proyecto tendra un solo microservicio, esta sera la pieza central de la logica del sistema, mientras que el `API Gateway` sera la puerta de entrada.
+Como este proyecto tiene un solo microservicio, esta es la pieza central de la logica del sistema, mientras que el `API Gateway` es la puerta de entrada.
 
 ### `frontend/`
 
-Esta carpeta contendra la interfaz visual del proyecto. Su objetivo sera permitir que el usuario pueda interactuar con el carrito de compras de forma sencilla, consultando productos agregados, actualizando cantidades, eliminando elementos y visualizando el total acumulado.
+Esta carpeta contiene la interfaz visual del proyecto implementada en `Vue 3` con `Vite`. Su objetivo es permitir que el usuario interactue con el carrito de compras de forma sencilla, consultando productos agregados, actualizando cantidades, eliminando elementos y visualizando el total acumulado.
+
+Actualmente el frontend incluye:
+
+- cliente HTTP configurado para consumir el `gateway`
+- componentes reutilizables del carrito
+- estado global con `Pinia`
+- pagina principal del carrito
+- estilos base responsivos
+- `Dockerfile` para ejecucion por `docker compose`
 
 ### `database/`
 
-Esta carpeta estara destinada a la configuracion de la base de datos del proyecto. Aqui podran incluirse:
+Esta carpeta esta destinada a la configuracion de la base de datos del proyecto. Aqui se incluyen:
 
-- Scripts de inicializacion
-- Creacion de tablas
-- Datos de prueba si son necesarios
-- Documentacion relacionada con la persistencia
+- scripts de inicializacion
+- creacion de tablas
+- configuracion relacionada con la persistencia
 
-Dado que el proyecto tambien contempla la base de datos como una parte fundamental, esta carpeta ayudara a mantener separada la configuracion de persistencia respecto al backend y al frontend.
+Dado que el proyecto contempla la base de datos como una parte fundamental, esta carpeta ayuda a mantener separada la configuracion de persistencia respecto al backend y al frontend.
 
 ## 4. Observacion Importante
 
-Aunque el modelo de referencia presentado en clase muestra varios microservicios, en nuestro proyecto solo se implementara uno: el microservicio de `shopping_cart`. Sin embargo, se agregara un `API Gateway` para centralizar el acceso al backend y se mantendra una estructura ordenada de tipo monorepo para que el sistema sea mas entendible y para que en el futuro pueda ampliarse si se desea integrar nuevos servicios.
+Aunque el modelo de referencia presentado en clase muestra varios microservicios, en este proyecto solo se implementa uno: el microservicio de `shopping_cart`. Sin embargo, se agrega un `API Gateway` para centralizar el acceso al backend y se mantiene una estructura ordenada de tipo monorepo para que el sistema sea mas entendible y para que en el futuro pueda ampliarse si se desea integrar nuevos servicios.
 
 ## 5. Beneficios de Esta Organizacion
 
-- Facilita la comprension general del proyecto.
-- Separa claramente gateway, backend, frontend y base de datos.
-- Permite documentar el desarrollo de forma ordenada.
-- Mejora el mantenimiento del codigo.
-- Hace mas sencillo el uso de Docker para levantar el entorno completo.
-- Deja una base preparada para futuras ampliaciones.
+- facilita la comprension general del proyecto
+- separa claramente gateway, backend, frontend y base de datos
+- permite documentar el desarrollo de forma ordenada
+- mejora el mantenimiento del codigo
+- hace mas sencillo el uso de Docker para levantar el entorno completo
+- deja una base preparada para futuras ampliaciones
 
 ## 6. Conclusion
 
-La estructura propuesta para `shopping_cart` busca adaptar la idea de monorepo del curso a un caso mas simple y enfocado: un solo microservicio con `API Gateway`, frontend, base de datos y configuracion de despliegue. Esto permite mantener una organizacion profesional del proyecto sin perder claridad en el proceso de aprendizaje.
+La estructura propuesta para `shopping_cart` adapta la idea de monorepo del curso a un caso mas simple y enfocado: un solo microservicio con `API Gateway`, frontend, base de datos y configuracion de despliegue. Esto permite mantener una organizacion profesional del proyecto sin perder claridad en el proceso de aprendizaje.
 
 ## 7. Estado Actual Implementado
 
@@ -144,14 +144,15 @@ Actualmente el proyecto ya no se encuentra solo en fase de propuesta. A nivel te
 - `backend` con la `HU-004 - Actualizar cantidad de producto en el carrito`
 - `backend` con la `HU-005 - Eliminar producto del carrito`
 - `backend` con la `HU-006 - Calcular total del carrito`
+- `frontend` con la `HU-007 - Visualizar y gestionar el carrito desde frontend por medio del API Gateway`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts`
 - `gateway` consumiendo el backend a traves de `POST /api/v1/carts/{cartId}/items`
 - `gateway` consumiendo el backend a traves de `PUT /api/v1/carts/{cartId}/items/{itemId}`
 - `gateway` consumiendo el backend a traves de `DELETE /api/v1/carts/{cartId}/items/{itemId}`
 - `gateway` consumiendo el backend a traves de `GET /api/v1/carts/{cartId}`
 - `gateway` consumiendo el backend a traves de `GET /api/v1/carts/{cartId}/total`
-- `docker-compose.yml` para levantar `postgres`, `backend` y `gateway`
-- `docker-compose.yml` con imagenes nombradas para `backend` y `gateway`
+- `docker-compose.yml` para levantar `frontend`, `postgres`, `backend` y `gateway`
+- `docker-compose.yml` con imagenes nombradas para `frontend`, `backend` y `gateway`
 - `docker-compose.yml` con `healthcheck` para coordinar el arranque entre servicios
 - `database/init.sql` para crear las tablas `carts` y `cart_items`
 - configuracion de PostgreSQL en `localhost:5020`
@@ -184,9 +185,23 @@ shopping_cart/
 |   |-- src/main/java/shopping_cart/gateway/service/
 |   |-- src/main/resources/application.yaml
 |   `-- Dockerfile
+|-- frontend/
+|   |-- src/api/
+|   |-- src/assets/styles/
+|   |-- src/components/cart/
+|   |-- src/composables/
+|   |-- src/layouts/
+|   |-- src/pages/
+|   |-- src/router/
+|   |-- src/services/
+|   |-- src/stores/
+|   |-- src/utils/
+|   |-- package.json
+|   |-- vite.config.js
+|   `-- Dockerfile
 |-- database/
 |   `-- init.sql
-`-- sin carpeta `frontend` implementada actualmente
+`-- proyecto listo para ejecutarse con Docker Compose
 ```
 
 Endpoints actualmente disponibles a traves del `gateway`:
@@ -220,3 +235,17 @@ Archivos representativos agregados o consolidados hasta la `HU-006`:
 - `gateway/src/main/java/shopping_cart/gateway/service/CartGatewayService.java`
 - `backend/src/test/java/shopping_cart/backend/service/CartServiceImplTest.java`
 - `gateway/src/test/java/shopping_cart/gateway/controller/CartGatewayControllerTest.java`
+
+Archivos representativos agregados con la `HU-007`:
+
+- `frontend/src/api/httpClient.js`
+- `frontend/src/services/cartService.js`
+- `frontend/src/stores/cartStore.js`
+- `frontend/src/composables/useCart.js`
+- `frontend/src/pages/CartPage.vue`
+- `frontend/src/components/cart/CartHeader.vue`
+- `frontend/src/components/cart/AddProductForm.vue`
+- `frontend/src/components/cart/CartItemsTable.vue`
+- `frontend/src/components/cart/CartSummary.vue`
+- `frontend/src/assets/styles/main.css`
+- `frontend/Dockerfile`
