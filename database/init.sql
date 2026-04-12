@@ -1,3 +1,7 @@
+-- Bootstrap legacy para el docker-compose principal del monorepo.
+-- La fuente de verdad del componente database es Liquibase:
+-- database/changelog-master.yaml
+
 CREATE TABLE IF NOT EXISTS carts (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -7,16 +11,6 @@ CREATE TABLE IF NOT EXISTS carts (
     CONSTRAINT chk_carts_status
         CHECK (status IN ('ACTIVE', 'CHECKED_OUT', 'CANCELLED'))
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_carts_active_user
-    ON carts (user_id)
-    WHERE status = 'ACTIVE';
-
-CREATE INDEX IF NOT EXISTS idx_carts_user_id
-    ON carts (user_id);
-
-CREATE INDEX IF NOT EXISTS idx_carts_status
-    ON carts (status);
 
 CREATE TABLE IF NOT EXISTS cart_items (
     id BIGSERIAL PRIMARY KEY,
@@ -40,8 +34,55 @@ CREATE TABLE IF NOT EXISTS cart_items (
         UNIQUE (cart_id, product_id)
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_carts_active_user
+    ON carts (user_id)
+    WHERE status = 'ACTIVE';
+
+CREATE INDEX IF NOT EXISTS idx_carts_user_id
+    ON carts (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_carts_status
+    ON carts (status);
+
 CREATE INDEX IF NOT EXISTS idx_cart_items_cart_id
     ON cart_items (cart_id);
 
 CREATE INDEX IF NOT EXISTS idx_cart_items_product_id
     ON cart_items (product_id);
+
+DO
+$$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'shopping_cart_admin') THEN
+        CREATE ROLE shopping_cart_admin LOGIN PASSWORD 'admin123';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'shopping_cart_employee') THEN
+        CREATE ROLE shopping_cart_employee LOGIN PASSWORD 'empleado123';
+    END IF;
+END
+$$;
+
+GRANT CONNECT ON DATABASE shopping_cart_db TO shopping_cart_admin;
+GRANT CONNECT ON DATABASE shopping_cart_db TO shopping_cart_employee;
+
+GRANT USAGE ON SCHEMA public TO shopping_cart_admin;
+GRANT USAGE ON SCHEMA public TO shopping_cart_employee;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO shopping_cart_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO shopping_cart_admin;
+
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO shopping_cart_employee;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO shopping_cart_employee;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT ALL PRIVILEGES ON TABLES TO shopping_cart_admin;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT ALL PRIVILEGES ON SEQUENCES TO shopping_cart_admin;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT, INSERT ON TABLES TO shopping_cart_employee;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT USAGE, SELECT ON SEQUENCES TO shopping_cart_employee;
