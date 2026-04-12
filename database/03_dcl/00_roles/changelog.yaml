@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-app-roles
+      author: codex
+      logicalFilePath: database/03_dcl/00_roles/001_create_app_roles.sql
+      labels: "HU-008,dcl,roles,shopping-cart"
+      comment: Creates database roles for the shopping cart application.
+      changes:
+        - sqlFile:
+            path: 001_create_app_roles.sql
+            relativeToChangelogFile: true
+            stripComments: false
+      rollback:
+        - sqlFile:
+            path: ../../05_rollbacks/03_dcl/00_roles/001_create_app_roles.rollback.sql
+            relativeToChangelogFile: true
+            stripComments: false
