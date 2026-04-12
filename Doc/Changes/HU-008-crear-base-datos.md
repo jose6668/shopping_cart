@@ -4,258 +4,287 @@
 - HU: `HU-008`
 - Nombre: Crear la base de datos del proyecto shopping cart
 - Componente: `database`
-- Estado: Propuesta funcional para implementacion de estructura relacional inicial
+- Estado: Implementada con estructura versionada en `Liquibase`
 - Rama de trabajo sugerida: `HU-008-db-dev`
 
 ## 2. Objetivo de la HU
-Crear y estructurar la base de datos del proyecto `shopping cart` en la ruta `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db`.
+Crear y estructurar la base de datos del proyecto `shopping cart` siguiendo como guia la arquitectura del repositorio `shopping-cart-db`, pero adaptada al dominio actual del carrito.
 
 La HU base indica que el sistema debe:
-- crear la base del proyecto de base de datos en la ruta indicada
-- definir una estructura inicial para scripts de creacion
-- incluir las tablas principales `cart` y `cart_item`
+- crear la base del proyecto de base de datos
+- definir la estructura inicial del esquema
+- incluir las tablas principales `carts` y `cart_items`
 - soportar la relacion entre carritos y productos agregados
-- dejar la base preparada para integracion posterior con el backend `shopping_cart`
+- dejar la base preparada para integracion con el backend `shopping_cart`
 
-La finalidad de esta HU es dejar una base relacional organizada y extensible para soportar la persistencia del dominio carrito.
+La implementacion final no se limito a un archivo SQL plano.  
+Se dejo un componente `database` organizado por capas SQL y controlado por `Liquibase`.
 
 ## 3. Justificacion funcional
-Actualmente el proyecto requiere una capa de persistencia clara para almacenar la informacion del carrito y de sus productos.
+Actualmente el proyecto necesita una base de datos persistente, versionada y trazable para soportar las HU del carrito.
 
 Esto genera una necesidad funcional porque:
-- las HU del carrito requieren persistencia real y no solo manejo temporal en memoria
-- el sistema debe conservar la relacion entre un carrito y multiples items
-- el backend necesita una estructura base consistente para consultar, crear y actualizar datos
-- el calculo de totales depende de informacion almacenada de forma confiable
-- futuras HU necesitan partir de un modelo de datos ya definido
+- las operaciones del carrito requieren persistencia real en PostgreSQL
+- la estructura de datos debe evolucionar sin perder control de cambios
+- el equipo necesita separar cambios estructurales, cambios de datos y permisos
+- la aplicacion requiere usuarios de base de datos con permisos diferenciados
+- las futuras HU deben apoyarse en una base formal y no en scripts aislados
 
-Por lo tanto, esta HU no consiste solamente en crear tablas.  
-Tambien establece la base estructural para el comportamiento completo del carrito de compras.
+Por lo tanto, esta HU no solo crea tablas.  
+Tambien establece la base de administracion del esquema del proyecto.
 
 ## 4. Justificacion del componente seleccionado
-La HU debe implementarse en el componente `database` porque alli residira la persistencia principal del proyecto `shopping_cart`.
+La HU se implementa en el componente `database` porque alli se centraliza la evolucion de la persistencia del sistema.
 
-Este componente sera responsable de:
-- definir el esquema relacional inicial
-- modelar la entidad de carrito
-- modelar la entidad de items del carrito
-- establecer claves primarias y foraneas
-- dejar scripts reutilizables para despliegue o inicializacion
+Este componente queda responsable de:
+- versionar el esquema relacional con `Liquibase`
+- organizar la base por capas `DDL`, `DML`, `DCL` y `TCL`
+- definir tablas, indices y permisos
+- mantener rollback por `changeSet`
+- ofrecer un flujo propio de despliegue con `Docker`
 
-La base de datos sera el soporte comun para las operaciones que luego ejecutara el backend.
+La base de datos queda desacoplada del backend como componente tecnico propio, aunque sigue alineada con las entidades persistentes del proyecto.
 
 ## 5. Necesidad funcional observada
-La HU indica que deben existir al menos las tablas `cart` y `cart_item`.
+La HU exige una base de datos lista para el dominio carrito.
 
-Eso obliga a definir como minimo:
-- como se identifica un carrito
-- como se asocia un carrito a un usuario
-- como se almacenan los productos agregados
-- como se relaciona cada item con su carrito padre
-- que campos permiten calcular subtotales y totales posteriormente
+Eso obligo a definir:
+- una tabla `carts` para el carrito principal
+- una tabla `cart_items` para los productos del carrito
+- una relacion `1:N` entre carrito e items
+- validaciones de integridad sobre cantidades, precios y subtotales
+- indices para consultas frecuentes
+- usuarios de base de datos para administracion y operacion
 
-La necesidad principal es contar con una estructura inicial simple, clara y alineada con las HU ya definidas del carrito.
+Adicionalmente, al tomar como guia la referencia `shopping-cart-db`, fue necesario adoptar una estructura versionada y no solo una carpeta de scripts sueltos.
 
 ## 6. Regla funcional principal
 Cada vez que el sistema necesite persistir informacion del carrito:
 
-1. debe existir una tabla principal `cart`
-2. debe existir una tabla dependiente `cart_item`
-3. cada carrito debe identificarse de forma unica
-4. cada item debe pertenecer a un carrito valido
-5. la relacion entre ambas tablas debe mantenerse por clave foranea
-6. la estructura debe permitir registrar productos, cantidades y precios
-7. la base debe quedar lista para ser consumida por el backend sin rehacer el modelo
+1. debe existir una tabla principal `carts`
+2. debe existir una tabla dependiente `cart_items`
+3. cada item debe referenciar un carrito valido
+4. un mismo usuario solo puede tener un carrito `ACTIVE`
+5. un mismo producto no debe repetirse dos veces dentro del mismo carrito
+6. los permisos de base de datos deben quedar diferenciados por rol
+7. el esquema debe poder desplegarse y revertirse de forma controlada con `Liquibase`
 
 ## 7. Comportamiento esperado de la base de datos
-La estructura propuesta debe:
+La implementacion realizada debe:
 - permitir crear carritos
 - permitir asociar multiples items a un carrito
-- almacenar informacion minima necesaria del producto dentro del item
-- soportar operaciones de consulta, insercion, actualizacion y eliminacion
-- mantener integridad referencial entre `cart` y `cart_item`
-- servir como base para el calculo posterior del total del carrito
+- almacenar producto, cantidad, precio y subtotal del item
+- soportar integridad referencial entre `carts` y `cart_items`
+- dejar indices para mejorar consultas del backend
+- definir usuarios de base de datos para administracion y operacion
+- dejar rollback separado por cada `changeSet` activo
 
 Resultado esperado:
-- un carrito puede existir sin perder su trazabilidad basica
-- un carrito puede contener multiples productos
-- los items no pueden existir sin un carrito asociado
-- la estructura queda preparada para futuras ampliaciones del dominio
+- el backend puede persistir el dominio carrito en PostgreSQL
+- el esquema queda versionado y trazable
+- el componente database queda listo para crecer con futuras migraciones
 
-## 8. Alcance funcional propuesto
-Se propone crear la base inicial del proyecto de datos con:
-- estructura de carpetas para scripts
-- script de creacion de tablas principales
-- claves primarias para `cart` y `cart_item`
-- clave foranea de `cart_item` hacia `cart`
-- campos minimos para soportar las HU del carrito
+## 8. Alcance funcional implementado
+La implementacion de esta HU incluye:
+- estructura de proyecto DB inspirada en `shopping-cart-db`
+- `Liquibase` como mecanismo principal de versionamiento
+- `DDL` para tablas e indices
+- `DCL` para roles y grants
+- `rollbacks` para los `changeSet` activos
+- `docker-compose` propio del componente database
+- documentacion tecnica del componente
 
 No hace parte de esta HU:
-- procedimientos almacenados avanzados
-- datos de prueba complejos
-- auditoria avanzada
-- migraciones historicas de versiones previas
-- integracion completa con backend dentro de este mismo HU
+- datos semilla en `DML`
+- vistas materializadas
+- funciones
+- procedimientos
+- triggers
+- politicas avanzadas
 
-## 9. Estructura propuesta del proyecto database
-La ruta objetivo indicada por la HU es:
+## 9. Estructura implementada del proyecto database
+Tomando como guia la ruta de referencia `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db`, el componente `database` de este proyecto quedo organizado asi:
 
-- `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db`
+- `database/changelog-master.yaml`
+- `database/01_ddl`
+- `database/02_dml`
+- `database/03_dcl`
+- `database/04_tcl`
+- `database/05_rollbacks`
+- `database/docker`
+- `database/docs`
+- `database/scripts`
+- `database/docker-compose.yml`
+- `database/liquibase.properties.example`
+- `database/.env.example`
+- `database/README.md`
 
-Estructura sugerida:
-- `shopping-cart-db/scripts`
-- `shopping-cart-db/scripts/schema`
-- `shopping-cart-db/scripts/data`
-- `shopping-cart-db/README.md`
+La estructura activa actual usa:
+- `01_ddl/03_tables`
+- `01_ddl/09_indexes`
+- `03_dcl/00_roles`
+- `03_dcl/01_grants`
 
-La carpeta `schema` debe contener el script principal de creacion de tablas y la carpeta `data` puede reservarse para semillas futuras si luego son necesarias.
+## 10. Modelo de datos implementado
+Para esta HU se implemento una estructura relacional compuesta por:
 
-## 10. Modelo de datos propuesto
-Para esta HU se propone una estructura relacional inicial compuesta por:
-
-### Tabla `cart`
+### Tabla `carts`
 - `id`
 - `user_id`
 - `status`
 - `created_at`
 - `updated_at`
 
-### Tabla `cart_item`
+### Tabla `cart_items`
 - `id`
 - `cart_id`
 - `product_id`
 - `name`
-- `price`
 - `quantity`
+- `price`
 - `subtotal`
 - `created_at`
 - `updated_at`
 
-Regla sugerida:
-- un `cart` puede tener muchos `cart_item`
+Reglas implementadas:
+- un `cart` puede tener muchos `cart_items`
 - cada `cart_item` pertenece a un solo `cart`
+- `status` de carrito se restringe a `ACTIVE`, `CHECKED_OUT`, `CANCELLED`
 
-## 11. Validaciones de estructura propuestas
-La base de datos debe validar como minimo:
+## 11. Validaciones de estructura implementadas
+La base de datos valida como minimo:
 
-1. `cart.id` debe ser unico
-2. `cart_item.id` debe ser unico
-3. `cart_item.cart_id` debe referenciar un carrito existente
+1. `carts.id` es unico
+2. `cart_items.id` es unico
+3. `cart_items.cart_id` referencia un carrito existente
 4. `quantity` debe ser mayor a `0`
 5. `price` debe ser mayor o igual a `0`
 6. `subtotal` debe ser mayor o igual a `0`
-7. no deben existir items huerfanos sin carrito asociado
-8. las columnas clave no deben permitir valores nulos cuando afecten la integridad del modelo
+7. no pueden existir items huerfanos
+8. un usuario no puede tener dos carritos `ACTIVE`
+9. un mismo producto no puede duplicarse dentro del mismo carrito
 
 ## 12. Relacion principal entre tablas
-La estructura central de esta HU se basa en una relacion `uno a muchos`:
+La estructura central de esta HU mantiene una relacion `uno a muchos`:
 
 - un carrito puede contener varios items
 - un item pertenece a un solo carrito
 
-Ejemplo funcional:
-- `cart`
-  - `id: 1`
-  - `user_id: 15`
-- `cart_item`
-  - item 1 asociado a `cart_id: 1`
-  - item 2 asociado a `cart_id: 1`
-  - item 3 asociado a `cart_id: 1`
+Esto deja soportadas las HU funcionales ya implementadas en backend:
+- crear carrito
+- agregar producto
+- consultar carrito
+- actualizar cantidad
+- eliminar item
+- calcular total
 
-Esto deja preparada la persistencia para las HU de agregar productos, consultar carrito, actualizar cantidades, eliminar items y calcular total.
+## 13. Trazabilidad tecnica implementada
+La implementacion del componente `database` quedo organizada asi:
 
-## 13. Trazabilidad tecnica propuesta
-Tomando como base la HU y el estilo del proyecto, la implementacion del componente database deberia organizarse asi:
+- `database/changelog-master.yaml`
+  - orquesta la activacion de capas principales
+- `database/01_ddl/changelog.yaml`
+  - orquesta cambios estructurales
+- `database/01_ddl/03_tables/001_create_cart_tables.sql`
+  - crea `carts` y `cart_items`
+- `database/01_ddl/09_indexes/001_create_cart_indexes.sql`
+  - crea indices del dominio carrito
+- `database/03_dcl/00_roles/001_create_app_roles.sql`
+  - crea `shopping_cart_admin` y `shopping_cart_employee`
+- `database/03_dcl/01_grants/001_grant_app_permissions.sql`
+  - define permisos sobre tablas y secuencias
+- `database/05_rollbacks/...`
+  - contiene reversas por `changeSet`
+- `database/docker-compose.yml`
+  - levanta PostgreSQL y runner de `Liquibase`
+- `database/docker/liquibase/Dockerfile`
+  - incorpora el driver de PostgreSQL
+- `database/README.md`
+  - documenta el uso del componente
 
-- `scripts/schema/001_create_cart_table.sql`
-  - crea la tabla principal `cart`
-- `scripts/schema/002_create_cart_item_table.sql`
-  - crea la tabla `cart_item`
-- `scripts/schema/003_constraints_indexes.sql`
-  - define llaves foraneas e indices basicos
-- `README.md`
-  - documenta como crear la base y ejecutar scripts
-
-Si se decide consolidar todo en un solo archivo inicial, tambien es valido dejar un script unico de esquema mientras conserve claridad y separacion logica.
-
-## 14. Motor de base de datos propuesto
-La HU original define una base de datos de tipo relacional.
-
-Para mantener consistencia con el resto del proyecto, se sugiere trabajar con `PostgreSQL`.
-
-Configuracion objetivo sugerida:
+## 14. Motor de base de datos implementado
+La HU se implemento con:
 - motor: `PostgreSQL`
-- base de datos sugerida: `shopping_cart_db`
-- tablas principales: `cart`, `cart_item`
-- soporte para claves foraneas e indices
+- base de datos: `shopping_cart_db`
+- versionamiento: `Liquibase`
+- soporte de despliegue: `Docker Compose`
 
-La definicion final del puerto, credenciales y estrategia de despliegue puede alinearse despues con el backend cuando se haga la integracion.
+Configuracion asociada:
+- `database/docker-compose.yml` usa PostgreSQL aislado para el componente DB
+- `database/liquibase.properties.example` permite ejecucion local de `Liquibase`
+- `backend/src/main/resources/application.yaml` sigue apuntando a PostgreSQL para consumo de aplicacion
 
-## 15. Script base esperado
-La base debe quedar preparada para soportar una creacion inicial como:
+## 15. Scripts y changeSets implementados
+El esquema activo queda representado por:
 
-```sql
-CREATE TABLE cart (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    status VARCHAR(30) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
-);
-
-CREATE TABLE cart_item (
-    id BIGSERIAL PRIMARY KEY,
-    cart_id BIGINT NOT NULL,
-    product_id BIGINT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    price NUMERIC(12,2) NOT NULL,
-    quantity INTEGER NOT NULL,
-    subtotal NUMERIC(12,2) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    CONSTRAINT fk_cart_item_cart
-        FOREIGN KEY (cart_id) REFERENCES cart(id)
-);
+```yaml
+databaseChangeLog:
+  - include: 01_ddl/changelog.yaml
+  - include: 02_dml/changelog.yaml
+  - include: 03_dcl/changelog.yaml
+  - include: 04_tcl/changelog.yaml
 ```
 
-Este ejemplo deja representada la estructura minima necesaria para iniciar el proyecto de base de datos.
+Y los cambios activos principales son:
+- `001-create-cart-tables`
+- `002-create-cart-indexes`
+- `003-create-app-roles`
+- `004-grant-app-permissions`
 
-## 16. Implementacion tecnica sugerida
-- crear el proyecto `shopping-cart-db` en la ruta indicada
-- definir la carpeta `scripts`
-- crear scripts de esquema para `cart`
-- crear scripts de esquema para `cart_item`
-- agregar restricciones de integridad referencial
-- agregar indices basicos sobre columnas de relacion y consulta frecuente
-- documentar en `README.md` la forma de inicializar el esquema
+Esto deja el componente preparado para crecer por migraciones y no por sobreescritura manual del esquema.
 
-## 17. Criterios de aceptacion propuestos
-1. Debe existir el proyecto de base de datos en la ruta indicada por la HU.
-2. Debe existir una estructura inicial de scripts para creacion del esquema.
-3. Debe existir la tabla `cart`.
-4. Debe existir la tabla `cart_item`.
-5. La tabla `cart_item` debe estar relacionada con `cart`.
-6. La estructura debe permitir almacenar productos asociados a un carrito.
-7. La base de datos debe quedar lista para integracion posterior con el backend `shopping_cart`.
-8. El esquema debe corresponder a una base de datos relacional.
+## 16. Implementacion tecnica realizada
+- se reorganizo `database` con arquitectura tipo `shopping-cart-db`
+- se agrego `Liquibase` como contrato de despliegue de base de datos
+- se migraron tablas e indices del carrito a `changeSet`
+- se agregaron usuarios `shopping_cart_admin` y `shopping_cart_employee`
+- se agregaron grants diferenciados
+- se documentaron rollbacks por capa
+- se agrego `docker-compose` propio del componente database
+- se conservo `database/init.sql` como compatibilidad con el monorepo principal
 
-## 18. Archivos candidatos a creacion
-- `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db\README.md`
-- `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db\scripts\schema\001_create_cart_table.sql`
-- `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db\scripts\schema\002_create_cart_item_table.sql`
-- `D:\escritorio\U\SEMESTRE 8\Sistemas Distribuidos\CORTE 1\Proyecto\shopping-cart-db\scripts\schema\003_constraints_indexes.sql`
+## 17. Criterios de aceptacion cubiertos
+1. Existe un componente de base de datos organizado para el proyecto.
+2. Existen las tablas `carts` y `cart_items`.
+3. La relacion entre carrito e items queda implementada.
+4. La estructura permite almacenar productos asociados a un carrito.
+5. La base queda lista para integracion con el backend `shopping_cart`.
+6. La solucion usa una base relacional `PostgreSQL`.
+7. El componente queda estructurado con `Liquibase` y rollbacks.
+8. Existen usuarios de base de datos con permisos diferenciados.
+
+## 18. Archivos creados o modificados
+- `database/changelog-master.yaml`
+- `database/01_ddl/changelog.yaml`
+- `database/01_ddl/03_tables/001_create_cart_tables.sql`
+- `database/01_ddl/03_tables/changelog.yaml`
+- `database/01_ddl/09_indexes/001_create_cart_indexes.sql`
+- `database/01_ddl/09_indexes/changelog.yaml`
+- `database/03_dcl/changelog.yaml`
+- `database/03_dcl/00_roles/001_create_app_roles.sql`
+- `database/03_dcl/00_roles/changelog.yaml`
+- `database/03_dcl/01_grants/001_grant_app_permissions.sql`
+- `database/03_dcl/01_grants/changelog.yaml`
+- `database/05_rollbacks/...`
+- `database/docker-compose.yml`
+- `database/docker/liquibase/Dockerfile`
+- `database/liquibase.properties.example`
+- `database/.env.example`
+- `database/README.md`
+- `database/init.sql`
 - `Doc/Changes/HU-008-crear-base-datos.md`
 
 ## 19. Riesgos o validaciones previas
-- Confirmar si el motor final sera `PostgreSQL` u otro motor relacional.
-- Validar si `subtotal` se almacenara fisicamente o se calculara en consultas posteriores.
-- Confirmar si el campo `status` del carrito se necesita desde esta HU o puede dejarse para una etapa siguiente.
-- Definir si los timestamps se manejaran con zona horaria o sin zona horaria.
-- Validar si el proyecto `shopping-cart-db` tendra scripts separados por version o un unico script inicial.
+- falta ejecutar `liquibase update` real contra una base limpia para validar runtime completo
+- `backend` aun usa estrategia propia de JPA y todavia no ha sido ajustado para depender exclusivamente de `Liquibase`
+- existen residuos legacy en `database/scripts` que deben eliminarse para evitar doble contrato de estructura
+- se debe decidir mas adelante si `init.sql` se elimina cuando el monorepo quede 100% alineado con `Liquibase`
 
 ## 20. Estado de este documento
-Este documento deja definida la propuesta funcional y tecnica inicial para implementar la `HU-008 - Crear la base de datos del proyecto shopping cart`, alineada con:
+Este documento deja registrada la implementacion de la `HU-008 - Crear la base de datos del proyecto shopping cart`, alineada con:
 - la HU original del proyecto
-- el formato documental usado en los archivos de `Changes`
-- la necesidad de una base relacional para persistir carritos e items
-- la preparacion del esquema para integracion posterior con el backend `shopping_cart`
+- la estructura de referencia `shopping-cart-db`
+- el uso de `Liquibase` como contrato principal
+- la separacion por capas `DDL`, `DML`, `DCL`, `TCL`
+- la persistencia relacional del dominio carrito
+- la preparacion del componente para futuras migraciones y controles de rollback
