@@ -1,0 +1,81 @@
+services:
+  frontend:
+    image: shopping-cart-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        VITE_GATEWAY_URL: http://localhost:8080
+    container_name: shopping-cart-frontend
+    depends_on:
+      gateway:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  postgres:
+    image: postgres:16
+    container_name: shopping-cart-postgres
+    environment:
+      POSTGRES_DB: shopping_cart_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5020:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shopping_cart_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: shopping-cart-backend:latest
+    build:
+      context: ./backend
+    container_name: shopping-cart-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: shopping_cart_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  gateway:
+    image: shopping-cart-gateway:latest
+    build:
+      context: ./gateway
+    container_name: shopping-cart-gateway
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      BACKEND_BASE_URL: http://backend:8081
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
