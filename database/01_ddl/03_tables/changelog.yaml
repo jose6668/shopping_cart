@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-cart-tables
+      author: codex
+      logicalFilePath: database/01_ddl/03_tables/001_create_cart_tables.sql
+      labels: "HU-008,ddl,base,shopping-cart"
+      comment: Creates the baseline tables for carts and cart items.
+      changes:
+        - sqlFile:
+            path: 001_create_cart_tables.sql
+            relativeToChangelogFile: true
+            stripComments: false
+      rollback:
+        - sqlFile:
+            path: ../../05_rollbacks/01_ddl/03_tables/001_create_cart_tables.rollback.sql
+            relativeToChangelogFile: true
+            stripComments: false

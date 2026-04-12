@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-grant-app-permissions
+      author: codex
+      logicalFilePath: database/03_dcl/01_grants/001_grant_app_permissions.sql
+      labels: "HU-008,dcl,grants,shopping-cart"
+      comment: Grants database permissions for the shopping cart application roles.
+      changes:
+        - sqlFile:
+            path: 001_grant_app_permissions.sql
+            relativeToChangelogFile: true
+            stripComments: false
+      rollback:
+        - sqlFile:
+            path: ../../05_rollbacks/03_dcl/01_grants/001_grant_app_permissions.rollback.sql
+            relativeToChangelogFile: true
+            stripComments: false
