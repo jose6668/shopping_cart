@@ -1,0 +1,6 @@
+# Requires a local Liquibase installation with the PostgreSQL JDBC driver available.
+changeLogFile=changelog-master.yaml
+url=jdbc:postgresql://localhost:5434/shopping_cart_db
+username=postgres
+password=postgres
+driver=org.postgresql.Driver

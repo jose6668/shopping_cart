@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-cart-indexes
+      author: codex
+      logicalFilePath: database/01_ddl/09_indexes/001_create_cart_indexes.sql
+      labels: "HU-008,ddl,indexes,shopping-cart"
+      comment: Creates the baseline indexes for cart tables.
+      changes:
+        - sqlFile:
+            path: 001_create_cart_indexes.sql
+            relativeToChangelogFile: true
+            stripComments: false
+      rollback:
+        - sqlFile:
+            path: ../../05_rollbacks/01_ddl/09_indexes/001_create_cart_indexes.rollback.sql
+            relativeToChangelogFile: true
+            stripComments: false

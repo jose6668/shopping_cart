@@ -30,7 +30,18 @@ shopping_cart/
 |   |-- vite.config.js
 |   |-- .env
 |   `-- Dockerfile
-`-- database/                        (Database configuration)
+`-- database/                        (Database project with Liquibase)
+    |-- changelog-master.yaml
+    |-- 01_ddl/
+    |-- 02_dml/
+    |-- 03_dcl/
+    |-- 04_tcl/
+    |-- 05_rollbacks/
+    |-- docker/
+    |-- docs/
+    |-- scripts/
+    |-- docker-compose.yml
+    |-- liquibase.properties.example
     `-- init.sql
 ```
 
@@ -109,13 +120,18 @@ Actualmente el frontend incluye:
 
 ### `database/`
 
-Esta carpeta esta destinada a la configuracion de la base de datos del proyecto. Aqui se incluyen:
+Esta carpeta ya no funciona solo como una ubicacion de scripts de inicializacion.  
+Ahora se comporta como un componente de base de datos versionado con `Liquibase`.
 
-- scripts de inicializacion
-- creacion de tablas
-- configuracion relacionada con la persistencia
+Aqui se incluyen:
+- `changelog-master.yaml` como punto de entrada del despliegue
+- capas `01_ddl`, `02_dml`, `03_dcl`, `04_tcl`
+- carpeta `05_rollbacks` para reversas
+- `docker-compose.yml` propio del componente database
+- documentacion y utilidades para ejecutar `Liquibase`
+- `init.sql` como compatibilidad temporal con el `docker-compose` principal del monorepo
 
-Dado que el proyecto contempla la base de datos como una parte fundamental, esta carpeta ayuda a mantener separada la configuracion de persistencia respecto al backend y al frontend.
+Esto permite separar la evolucion del esquema respecto al backend y administrar la base de datos con una estructura mas profesional y trazable.
 
 ## 4. Observacion Importante
 
@@ -129,6 +145,7 @@ Aunque el modelo de referencia presentado en clase muestra varios microservicios
 - mejora el mantenimiento del codigo
 - hace mas sencillo el uso de Docker para levantar el entorno completo
 - deja una base preparada para futuras ampliaciones
+- deja la evolucion de la base de datos controlada con `Liquibase`
 
 ## 6. Conclusion
 
@@ -154,7 +171,12 @@ Actualmente el proyecto ya no se encuentra solo en fase de propuesta. A nivel te
 - `docker-compose.yml` para levantar `frontend`, `postgres`, `backend` y `gateway`
 - `docker-compose.yml` con imagenes nombradas para `frontend`, `backend` y `gateway`
 - `docker-compose.yml` con `healthcheck` para coordinar el arranque entre servicios
-- `database/init.sql` para crear las tablas `carts` y `cart_items`
+- componente `database` reorganizado con `Liquibase`
+- `database/changelog-master.yaml` como contrato principal del esquema
+- `database/01_ddl` para tablas e indices del carrito
+- `database/03_dcl` para roles y grants
+- `database/05_rollbacks` para reversas por `changeSet`
+- `database/init.sql` conservado como bootstrap legacy
 - configuracion de PostgreSQL en `localhost:5020`
 
 Estructura real actualmente usada:
@@ -200,6 +222,17 @@ shopping_cart/
 |   |-- vite.config.js
 |   `-- Dockerfile
 |-- database/
+|   |-- changelog-master.yaml
+|   |-- 01_ddl/
+|   |-- 02_dml/
+|   |-- 03_dcl/
+|   |-- 04_tcl/
+|   |-- 05_rollbacks/
+|   |-- docker/
+|   |-- docs/
+|   |-- scripts/
+|   |-- docker-compose.yml
+|   |-- liquibase.properties.example
 |   `-- init.sql
 `-- proyecto listo para ejecutarse con Docker Compose
 ```
@@ -249,3 +282,16 @@ Archivos representativos agregados con la `HU-007`:
 - `frontend/src/components/cart/CartSummary.vue`
 - `frontend/src/assets/styles/main.css`
 - `frontend/Dockerfile`
+
+Archivos representativos agregados con la `HU-008`:
+
+- `database/changelog-master.yaml`
+- `database/01_ddl/03_tables/001_create_cart_tables.sql`
+- `database/01_ddl/09_indexes/001_create_cart_indexes.sql`
+- `database/03_dcl/00_roles/001_create_app_roles.sql`
+- `database/03_dcl/01_grants/001_grant_app_permissions.sql`
+- `database/05_rollbacks/01_ddl/03_tables/001_create_cart_tables.rollback.sql`
+- `database/05_rollbacks/03_dcl/01_grants/001_grant_app_permissions.rollback.sql`
+- `database/docker-compose.yml`
+- `database/docker/liquibase/Dockerfile`
+- `database/docs/sql-layer-architecture.md`
